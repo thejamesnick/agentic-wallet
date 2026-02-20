@@ -21,10 +21,10 @@ export class MachineIdentity {
     ].join('|');
 
     // Hash to create consistent 256-bit key
+    // This is unique per machine - no additional salt needed
     return crypto
       .createHash('sha256')
       .update(machineData)
-      .update('paw-wallet-v1') // Salt with app identifier
       .digest('hex');
   }
 
