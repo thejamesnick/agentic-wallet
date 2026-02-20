@@ -84,14 +84,15 @@ export class JupiterClient {
    */
   static async getSwapTransaction(
     quote: QuoteResponse,
-    userPublicKey: string
+    userPublicKey: string,
+    priorityFeeLamports?: number
   ): Promise<string> {
     const swapRequest: SwapRequest = {
       quoteResponse: quote,
       userPublicKey,
       wrapAndUnwrapSol: true,
       dynamicComputeUnitLimit: true,
-      prioritizationFeeLamports: 'auto' as any,
+      prioritizationFeeLamports: priorityFeeLamports || ('auto' as any),
     };
 
     const response = await fetch(`${JupiterClient.API_BASE}/swap`, {

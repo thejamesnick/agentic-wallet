@@ -4,6 +4,8 @@ export interface WalletConfig {
   agentId: string;
   passphrase?: string;
   network?: 'devnet' | 'mainnet-beta' | 'testnet';
+  defaultSlippage?: number; // Default slippage in basis points (bps)
+  defaultPriorityFee?: number; // Default priority fee in lamports
 }
 
 export interface WalletInfo {

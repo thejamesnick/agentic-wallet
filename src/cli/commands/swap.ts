@@ -11,9 +11,18 @@ export const swapCommand = new Command('swap')
   .requiredOption('--to <token>', 'Output token (SOL, USDC, USDT, BONK or mint address)')
   .requiredOption('--amount <amount>', 'Amount to swap')
   .option('--network <network>', 'Network to use (devnet, mainnet-beta)', 'mainnet-beta')
-  .option('--slippage <bps>', 'Slippage tolerance in basis points', '50')
+  .option('--slippage <bps>', 'Slippage tolerance in basis points (default: 50, meme coins: 500-1000)', '50')
+  .option('--priority-fee <lamports>', 'Priority fee in lamports for faster execution (default: auto)')
   .action(async (options) => {
     try {
+      // Load config to get defaults
+      const { FileSystemStorage } = await import('../../core/storage/filesystem');
+      const config = await FileSystemStorage.loadConfig(options.agentId);
+
+      // Use config defaults if not specified
+      const slippage = options.slippage || config.defaultSlippage || 50;
+      const priorityFee = options.priorityFee || config.defaultPriorityFee;
+
       console.log('\n📟 PAW - Token Swap');
       console.log('Agent ID:', options.agentId);
       console.log('From:    ', options.from);
@@ -46,7 +55,7 @@ export const swapCommand = new Command('swap')
         inputMint,
         outputMint,
         amount,
-        parseInt(options.slippage)
+        parseInt(slippage.toString())
       );
 
       // Display quote
@@ -58,16 +67,21 @@ export const swapCommand = new Command('swap')
       console.log('Input:  ', options.amount, options.from);
       console.log('Output: ', outAmount, options.to);
       console.log('Price Impact:', quote.priceImpactPct, '%');
-      console.log('Slippage:', options.slippage, 'bps');
+      console.log('Slippage:', slippage, 'bps', `(${(parseInt(slippage.toString()) / 100).toFixed(1)}%)`);
+      if (priorityFee) {
+        console.log('Priority Fee:', priorityFee, 'lamports');
+      }
 
       // Load keypair
       const keypair = await WalletManager.loadKeypairAuto(options.agentId);
 
       // Get swap transaction
       console.log('\nPreparing swap transaction...');
+      const priorityFeeValue = priorityFee ? parseInt(priorityFee.toString()) : undefined;
       const swapTransaction = await JupiterClient.getSwapTransaction(
         quote,
-        keypair.publicKey.toBase58()
+        keypair.publicKey.toBase58(),
+        priorityFeeValue
       );
 
       // Execute swap

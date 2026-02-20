@@ -6,6 +6,8 @@ export const configCommand = new Command('config')
   .argument('[agent-id]', 'Agent identifier')
   .option('--agent-id <id>', 'Agent identifier (alternative)')
   .option('--network <network>', 'Set network (devnet, mainnet-beta, testnet)')
+  .option('--slippage <bps>', 'Set default slippage in basis points (e.g., 50 = 0.5%, 1000 = 10%)')
+  .option('--priority-fee <lamports>', 'Set default priority fee in lamports')
   .option('--show', 'Show current configuration')
   .action(async (agentIdArg, options) => {
     try {
@@ -30,15 +32,19 @@ export const configCommand = new Command('config')
       const config = await FileSystemStorage.loadConfig(agentId);
 
       // If --show or no options, display config
-      if (options.show || !options.network) {
+      if (options.show || (!options.network && !options.slippage && !options.priorityFee)) {
         console.log('\n📟 PAW - Wallet Configuration');
         console.log('Agent ID:', config.agentId);
         console.log('Address: ', config.publicKey);
-        console.log('Network: ', config.network);
+        console.log('Network: ', config.network || 'devnet');
+        console.log('Default Slippage:', config.defaultSlippage || 50, 'bps');
+        console.log('Default Priority Fee:', config.defaultPriorityFee || 'auto');
         console.log('Created: ', new Date(config.createdAt).toLocaleString());
         console.log('');
         return;
       }
+
+      let updated = false;
 
       // Update network
       if (options.network) {
@@ -50,13 +56,37 @@ export const configCommand = new Command('config')
 
         const oldNetwork = config.network;
         config.network = options.network;
-        await FileSystemStorage.saveConfig(agentId, config);
-
-        console.log('\n📟 PAW - Configuration Updated');
-        console.log('Agent ID:', config.agentId);
         console.log('Network: ', `${oldNetwork} → ${options.network}`);
-        console.log('');
-        console.log('✅ Network changed successfully!');
+        updated = true;
+      }
+
+      // Update slippage
+      if (options.slippage) {
+        const slippage = parseInt(options.slippage);
+        if (isNaN(slippage) || slippage < 0) {
+          console.error('\n❌ Error: Invalid slippage. Must be a positive number.');
+          process.exit(1);
+        }
+        config.defaultSlippage = slippage;
+        console.log('Default Slippage:', slippage, 'bps');
+        updated = true;
+      }
+
+      // Update priority fee
+      if (options.priorityFee) {
+        const priorityFee = parseInt(options.priorityFee);
+        if (isNaN(priorityFee) || priorityFee < 0) {
+          console.error('\n❌ Error: Invalid priority fee. Must be a positive number.');
+          process.exit(1);
+        }
+        config.defaultPriorityFee = priorityFee;
+        console.log('Default Priority Fee:', priorityFee, 'lamports');
+        updated = true;
+      }
+
+      if (updated) {
+        await FileSystemStorage.saveConfig(agentId, config);
+        console.log('\n✅ Configuration updated successfully!');
         console.log('');
       }
     } catch (error) {
