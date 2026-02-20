@@ -66,6 +66,7 @@ We're launching on Solana because:
 - **<2 Second Swaps**: Fast enough to snipe meme launches
 - **Priority Fees**: Configurable fees for competitive trading
 - **Jupiter DEX**: Best prices across ALL Solana DEXs
+- **Faster than Mobile Wallets**: 2-3x faster than Phantom/Solflare
 
 ### 💰 Portfolio Management
 - **Real-Time Pricing**: Live SOL prices from CoinGecko
