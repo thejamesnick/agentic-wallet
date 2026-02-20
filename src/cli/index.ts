@@ -9,6 +9,7 @@ import { swapCommand } from './commands/swap';
 import { historyCommand } from './commands/history';
 import { configCommand } from './commands/config';
 import { tokensCommand } from './commands/tokens';
+import { dashboardCommand } from './commands/dashboard';
 
 const program = new Command();
 
@@ -19,6 +20,7 @@ program
 
 // Register commands
 program.addCommand(initCommand);
+program.addCommand(dashboardCommand);
 program.addCommand(configCommand);
 program.addCommand(addressCommand);
 program.addCommand(balanceCommand);
