@@ -27,7 +27,7 @@ export const tokensCommand = new Command('tokens')
       let network = options.network;
       if (!network) {
         const config = await FileSystemStorage.loadConfig(agentId);
-        network = config.network || 'devnet';
+        network = config.network || 'mainnet-beta';
       }
 
       console.log('\n📟 PAW - Token Balances');

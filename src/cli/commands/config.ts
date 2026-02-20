@@ -36,7 +36,7 @@ export const configCommand = new Command('config')
         console.log('\n📟 PAW - Wallet Configuration');
         console.log('Agent ID:', config.agentId);
         console.log('Address: ', config.publicKey);
-        console.log('Network: ', config.network || 'devnet');
+        console.log('Network: ', config.network || 'mainnet-beta');
         console.log('Default Slippage:', config.defaultSlippage || 50, 'bps');
         console.log('Default Priority Fee:', config.defaultPriorityFee || 'auto');
         console.log('Created: ', new Date(config.createdAt).toLocaleString());

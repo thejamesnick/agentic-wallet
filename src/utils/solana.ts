@@ -24,7 +24,7 @@ export class SolanaClient {
   /**
    * Get or create a connection to Solana
    */
-  static getConnection(network: Cluster = 'devnet'): Connection {
+  static getConnection(network: Cluster = 'mainnet-beta'): Connection {
     if (!SolanaClient.connections.has(network)) {
       const endpoint = this.getEndpoint(network);
       const connection = new Connection(endpoint, 'confirmed');
@@ -46,7 +46,7 @@ export class SolanaClient {
    */
   static async getBalance(
     address: string,
-    network: Cluster = 'devnet'
+    network: Cluster = 'mainnet-beta'
   ): Promise<number> {
     const connection = SolanaClient.getConnection(network);
     const publicKey = new (await import('@solana/web3.js')).PublicKey(

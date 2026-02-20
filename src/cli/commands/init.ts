@@ -7,7 +7,7 @@ export const initCommand = new Command('init')
   .argument('[agent-id]', 'Unique agent identifier')
   .option('--agent-id <id>', 'Unique agent identifier (alternative)')
   .option('--passphrase <passphrase>', 'Custom passphrase (auto-generated if not provided)')
-  .option('--network <network>', 'Network to use (devnet, mainnet-beta, testnet)', 'devnet')
+  .option('--network <network>', 'Network to use (devnet, mainnet-beta, testnet)', 'mainnet-beta')
   .action(async (agentIdArg, options) => {
     try {
       // Support both positional and flag syntax
@@ -41,10 +41,13 @@ export const initCommand = new Command('init')
       console.log(chalk.gray('  • Passphrase encrypted with machine-specific key'));
       console.log(chalk.gray('  • Files stored in ~/.paw/agents/' + agentId));
 
+      console.log(chalk.cyan('\n💰 Fund your wallet:'));
       if (options.network === 'devnet') {
-        console.log(chalk.cyan('\n💰 Fund your wallet:'));
         console.log(chalk.white('  solana airdrop 2 ' + walletInfo.address + ' --url devnet'));
         console.log(chalk.gray('  or visit: https://faucet.solana.com'));
+      } else {
+        console.log(chalk.white('  Send SOL to: ' + walletInfo.address));
+        console.log(chalk.gray('  From any exchange or wallet'));
       }
 
       console.log(chalk.cyan('\n📟 Next steps:'));

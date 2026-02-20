@@ -26,7 +26,7 @@ export const dashboardCommand = new Command('dashboard')
       // Load wallet info
       const walletInfo = await WalletManager.getWalletInfo(agentId);
       const config = await FileSystemStorage.loadConfig(agentId);
-      const network = config.network || 'devnet';
+      const network = config.network || 'mainnet-beta';
 
       // Create screen with pager aesthetic
       const screen = blessed.screen({

@@ -29,7 +29,7 @@ export const balanceCommand = new Command('balance')
       let network = options.network;
       if (!network) {
         const config = await FileSystemStorage.loadConfig(agentId);
-        network = config.network || 'devnet';
+        network = config.network || 'mainnet-beta';
       }
 
       const connection = SolanaClient.getConnection(network as Cluster);

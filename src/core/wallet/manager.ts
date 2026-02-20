@@ -40,7 +40,7 @@ export class WalletManager {
       agentId,
       publicKey: keypair.publicKey.toBase58(),
       createdAt: new Date().toISOString(),
-      network: config.network || 'devnet',
+      network: config.network || 'mainnet-beta',
     });
 
     const walletInfo = {

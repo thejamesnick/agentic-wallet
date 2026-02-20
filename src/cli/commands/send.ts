@@ -35,7 +35,7 @@ export const sendCommand = new Command('send')
       let network = options.network;
       if (!network) {
         const config = await FileSystemStorage.loadConfig(agentId);
-        network = config.network || 'devnet';
+        network = config.network || 'mainnet-beta';
       }
 
       console.log('\n📟 PAW - Send Transaction');

@@ -28,7 +28,7 @@ export const historyCommand = new Command('history')
       let network = options.network;
       if (!network) {
         const config = await FileSystemStorage.loadConfig(agentId);
-        network = config.network || 'devnet';
+        network = config.network || 'mainnet-beta';
       }
 
       console.log('\n📟 PAW - Transaction History');
