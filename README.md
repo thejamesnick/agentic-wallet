@@ -25,30 +25,22 @@ PAW provides:
 - **Multi-Agent Support** - Each agent manages its own wallet independently
 - **Interactive Dashboard** - Retro pager-style TUI for monitoring
 
-## Submission Requirements
-
-✅ Working prototype on Solana Devnet  
-✅ Programmatic wallet creation  
-✅ Automatic transaction signing  
-✅ DeFi protocol interaction (Jupiter for swaps)  
-✅ Deep dive documentation (written + video)  
-✅ Open-source code with README  
-✅ SKILLS.md for AI agents  
-✅ Demo of autonomous agent using the wallet
-
 ## Current Status
 
-🚧 **In Development** - Building for the Superteam DeFi Developer Challenge
+✅ **Live on npm** - Ready to use!
 
-**Phase 1:** Solana Implementation (Current Focus)
-- Starting with Solana for fast, low-cost transactions
-- Building core wallet infrastructure
-- Implementing basic DeFi integrations
+**Available Now:**
+- ✅ Solana mainnet & devnet support
+- ✅ Programmatic wallet creation
+- ✅ Automatic transaction signing
+- ✅ Jupiter DEX integration for best swap prices
+- ✅ Multi-agent support
+- ✅ Interactive dashboard
 
-**Phase 2:** Multi-chain Expansion (Planned)
-- EVM chains (Ethereum, Base, Polygon)
+**Coming Soon:**
+- Multi-chain support (EVM chains)
+- Advanced DeFi integrations
 - Cross-chain capabilities
-- Unified API across all chains
 
 ## Why Solana First?
 
@@ -267,41 +259,22 @@ console.log(`Balance: ${balance} SOL`);
 
 ## Roadmap
 
-- [x] Project planning and design
-- [ ] Core wallet infrastructure (Solana Devnet)
-  - [ ] Programmatic wallet creation
-  - [ ] Automated transaction signing
-  - [ ] SOL/SPL token support
-- [ ] Key management system
-  - [ ] Secure key storage for agents
-  - [ ] Encryption and access controls
-- [ ] DeFi integration (Jupiter DEX)
-  - [ ] Token swaps
-  - [ ] Price feeds
-- [ ] AI agent simulation
-  - [ ] Simple trading bot logic
-  - [ ] Decision-making framework
-- [ ] Multi-agent support
-  - [ ] Independent wallet management
-  - [ ] Agent registry
-- [ ] Monitoring tools (Optional)
-  - [ ] CLI for observing agent actions
-  - [ ] Transaction history viewer
-- [ ] Documentation
-  - [ ] README with setup instructions
-  - [ ] SKILLS.md for AI agents
-  - [ ] Deep dive (written + video)
-- [ ] Testing & deployment on Devnet
+- [x] Core wallet infrastructure
+- [x] Programmatic wallet creation
+- [x] Automated transaction signing
+- [x] SOL/SPL token support
+- [x] Secure key management
+- [x] DeFi integration (Jupiter DEX)
+- [x] Multi-agent support
+- [x] Interactive dashboard
+- [ ] Multi-chain support (EVM)
+- [ ] Advanced DeFi protocols
+- [ ] Cross-chain capabilities
 
 ## Contributing
 
-This project is being developed for the Superteam DeFi Developer Challenge. Stay tuned for contribution guidelines after the initial release!
+Contributions are welcome! Please open an issue or PR on GitHub.
 
 ## License
 
-TBD
-
----
-
-**Built for the Superteam DeFi Developer Challenge 2026**  
-*Empowering AI agents, one paw at a time* �
+MIT
