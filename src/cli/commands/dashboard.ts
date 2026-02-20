@@ -3,6 +3,7 @@ import { WalletManager } from '../../core/wallet/manager';
 import { SolanaClient } from '../../utils/solana';
 import { FileSystemStorage } from '../../core/storage/filesystem';
 import { Cluster } from '@solana/web3.js';
+import { PriceService } from '../../utils/price';
 const blessed = require('blessed');
 
 export const dashboardCommand = new Command('dashboard')
@@ -85,9 +86,39 @@ export const dashboardCommand = new Command('dashboard')
         try {
           const connection = SolanaClient.getConnection(network as Cluster);
           
-          // Get balance
+          // Get SOL balance
           const balance = await connection.getBalance(walletInfo.publicKey);
-          const solBalance = (balance / 1e9).toFixed(9);
+          const solBalance = balance / 1e9;
+
+          // Get SPL token accounts
+          const { PublicKey: SolanaPublicKey } = await import('@solana/web3.js');
+          const tokenAccounts = await connection.getParsedTokenAccountsByOwner(
+            walletInfo.publicKey,
+            { programId: new SolanaPublicKey('TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA') }
+          );
+
+          // Calculate total value in USD using real SOL price
+          const SOL_PRICE = await PriceService.getSolPrice();
+          let totalUSD = solBalance * SOL_PRICE;
+          
+          // Add SPL token values
+          for (const accountInfo of tokenAccounts.value) {
+            const parsedInfo = accountInfo.account.data.parsed.info;
+            const mint = parsedInfo.mint;
+            const tokenBalance = parsedInfo.tokenAmount.uiAmount || 0;
+            
+            // Known stablecoins = $1 each
+            const stablecoins = [
+              'EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v', // USDC
+              'Es9vMFrzaCERmJfrF4H2FYD4KCoNkY11McCe8BenwNYB', // USDT
+            ];
+            
+            if (stablecoins.includes(mint)) {
+              totalUSD += tokenBalance;
+            }
+          }
+
+          const totalSOL = totalUSD / SOL_PRICE;
 
           // Get transaction history
           const signatures = await connection.getSignaturesForAddress(
@@ -112,15 +143,17 @@ export const dashboardCommand = new Command('dashboard')
           content += '───────────────────────────────────────────────────────────\n';
           content += '\n';
 
-          // Balance (like pager notification)
-          content += `{bold}💰 BALANCE:{/bold}\n`;
-          content += `   ${solBalance} SOL\n`;
+          // Total Portfolio Value
+          content += `{bold}💰 TOTAL PORTFOLIO:{/bold}\n`;
+          content += `   ~${totalSOL.toFixed(6)} SOL\n`;
+          content += `   ~$${totalUSD.toFixed(2)} USD\n`;
+          content += `   {gray-fg}(Live price: $${SOL_PRICE.toFixed(2)}/SOL){/gray-fg}\n`;
           content += '\n';
           content += '───────────────────────────────────────────────────────────\n';
           content += '\n';
 
           // Recent messages (transactions)
-          content += `{bold}📬 RECENT MESSAGES ({${signatures.length}}):{/bold}\n`;
+          content += `{bold}📬 RECENT MESSAGES (${signatures.length}):{/bold}\n`;
           content += '\n';
 
           if (signatures.length === 0) {
