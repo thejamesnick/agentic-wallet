@@ -18,7 +18,7 @@ PAW provides:
 - **Automated Transaction Signing** - No manual approval needed
 - **SOL & SPL Token Support** - Full Solana token compatibility
 - **DeFi Protocol Integration** - Interact with Jupiter, Raydium, etc.
-- **Safe Key Management** - SSH-style encryption (AES-256-GCM)
+- **Safe Key Management** - Double encryption (wallet + machine-specific passphrase)
 - **Multi-Agent Support** - Each agent manages its own wallet independently
 - **Optional Monitoring Dashboard** - CLI/UI to observe agent activities
 
@@ -77,19 +77,41 @@ We're launching on Solana because:
 
 ## Security Model
 
-PAW uses an **SSH-style encryption model** for maximum security:
+PAW uses a **double-encryption security model** for maximum protection:
 
-- **At Rest:** Private keys encrypted with AES-256-GCM
-- **In Use:** Keys decrypted in memory only when signing
-- **After Use:** Keys immediately cleared from memory
-- **Never:** Keys stored in plaintext on disk or in logs
+### Layer 1: Wallet Encryption (AES-256-GCM)
+- **What:** Your wallet's private key
+- **Encrypted with:** Random passphrase (32 bytes)
+- **Algorithm:** AES-256-GCM with PBKDF2 (100,000 iterations)
+- **Result:** `keypair.enc` (encrypted blob)
+
+### Layer 2: Passphrase Encryption (Machine-Specific)
+- **What:** The passphrase from Layer 1
+- **Encrypted with:** Machine-specific key (derived from hostname, username, OS, etc.)
+- **Algorithm:** AES-256-CBC with Scrypt
+- **Result:** `.passphrase` (encrypted blob, only works on this machine)
+
+### Layer 3: File Permissions
+- **All files:** Mode 0600 (owner read/write only)
+- **OS-level protection:** Other users can't read files
 
 **Key Features:**
-- 🔐 AES-256-GCM encryption (industry standard)
-- 🔑 PBKDF2 key derivation (100,000 iterations)
-- 🛡️ Passphrase protection
+- 🔐 Double encryption (safe inside a safe)
+- 🖥️ Machine-bound (files useless on other computers)
+- 🔑 Zero plaintext (everything encrypted at rest)
 - 🧹 Memory-safe (keys cleared after signing)
-- 🔒 Per-agent isolation
+- 🛡️ Theft-resistant (stolen files are useless)
+
+### What's Stored on Disk:
+
+```bash
+~/.paw/agents/bot-001/
+├── keypair.enc          # Encrypted wallet (AES-256-GCM)
+├── .passphrase          # Encrypted passphrase (machine-specific)
+└── config.json          # Public metadata only (no secrets)
+```
+
+**All secrets are encrypted - nothing in plaintext!**
 
 See [SECURITY.md](about/SECURITY.md) for detailed security documentation.
 

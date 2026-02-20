@@ -2,26 +2,31 @@
 
 ## Overview
 
-PAW uses an SSH-style security model where private keys are **encrypted at rest** and only decrypted in memory when needed for signing transactions. Keys are never exposed in plaintext on disk.
+PAW uses a **double-encryption security model** where private keys are encrypted at rest with a passphrase, and the passphrase itself is encrypted with a machine-specific key. This creates a "safe inside a safe" architecture where stolen files are useless without access to the original machine.
 
 ## Core Principle
 
 ```
 ┌─────────────────────────────────────┐
-│  Encrypted Key Storage              │
-│  ~/.paw/agents/bot-001/keypair.enc  │
-│  (AES-256 encryption)               │
+│  Layer 1: Wallet Encryption         │
+│  Private Key → AES-256-GCM          │
+│  (encrypted with passphrase)        │
 └─────────────────────────────────────┘
-         ↓ only when signing needed
+         ↓ passphrase stored as
 ┌─────────────────────────────────────┐
-│  1. Decrypt key in memory           │
-│  2. Sign transaction                │
-│  3. Clear key from memory           │
-│  4. Key stays encrypted on disk     │
+│  Layer 2: Passphrase Encryption     │
+│  Passphrase → AES-256-CBC           │
+│  (encrypted with machine key)       │
+└─────────────────────────────────────┘
+         ↓ machine key derived from
+┌─────────────────────────────────────┐
+│  Layer 3: Machine Identity          │
+│  hostname + username + OS + arch    │
+│  (unique to this computer)          │
 └─────────────────────────────────────┘
 ```
 
-**Key never exists unencrypted on disk.**
+**Keys never exist unencrypted on disk.**
 
 ## Implementation Details
 
@@ -31,14 +36,17 @@ PAW uses an SSH-style security model where private keys are **encrypted at rest*
 ~/.paw/
 ├── agents/
 │   ├── trading-bot-001/
-│   │   ├── keypair.enc       # AES-256 encrypted private key
-│   │   ├── config.json       # Agent configuration
-│   │   └── .passphrase       # Optional: stored passphrase
+│   │   ├── keypair.enc       # AES-256-GCM encrypted private key
+│   │   ├── .passphrase       # AES-256-CBC encrypted passphrase (machine-specific)
+│   │   └── config.json       # Public metadata (no secrets)
 │   ├── lp-bot-001/
 │   │   ├── keypair.enc
+│   │   ├── .passphrase
 │   │   └── config.json
 └── global-config.json
 ```
+
+**All secrets are encrypted - nothing in plaintext!**
 
 ### 2. Encryption Algorithm
 

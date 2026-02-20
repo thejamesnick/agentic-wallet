@@ -28,8 +28,12 @@ export class WalletManager {
       finalPassphrase
     );
 
-    // Save to disk
+    // Save encrypted keypair to disk
     await FileSystemStorage.saveKeypair(agentId, encryptedKeypair);
+
+    // Save passphrase (encrypted with machine-specific key)
+    // This is NOT plaintext! It's encrypted so only this machine can decrypt it
+    await FileSystemStorage.savePassphrase(agentId, finalPassphrase);
 
     // Save config
     await FileSystemStorage.saveConfig(agentId, {
@@ -39,15 +43,17 @@ export class WalletManager {
       network: config.network || 'devnet',
     });
 
-    // Clear keypair from memory
-    EncryptionService.clearKeypair(keypair);
-
-    return {
+    const walletInfo = {
       agentId,
       publicKey: keypair.publicKey,
       address: keypair.publicKey.toBase58(),
       createdAt: new Date(),
     };
+
+    // Clear keypair from memory
+    EncryptionService.clearKeypair(keypair);
+
+    return walletInfo;
   }
 
   /**
@@ -79,6 +85,23 @@ export class WalletManager {
       throw new Error(`Wallet for agent "${agentId}" not found`);
     }
 
+    const encryptedKeypair = await FileSystemStorage.loadKeypair(agentId);
+    return EncryptionService.decrypt(encryptedKeypair, passphrase);
+  }
+
+  /**
+   * Load keypair automatically using saved passphrase
+   * Passphrase is encrypted with machine-specific key
+   */
+  static async loadKeypairAuto(agentId: string): Promise<Keypair> {
+    if (!(await FileSystemStorage.exists(agentId))) {
+      throw new Error(`Wallet for agent "${agentId}" not found`);
+    }
+
+    // Load encrypted passphrase and decrypt it
+    const passphrase = await FileSystemStorage.loadPassphrase(agentId);
+
+    // Load and decrypt keypair
     const encryptedKeypair = await FileSystemStorage.loadKeypair(agentId);
     return EncryptionService.decrypt(encryptedKeypair, passphrase);
   }

@@ -25,6 +25,13 @@ export class FileSystemStorage {
   }
 
   /**
+   * Get the passphrase file path for an agent
+   */
+  static getPassphrasePath(agentId: string): string {
+    return path.join(FileSystemStorage.getAgentDir(agentId), '.passphrase');
+  }
+
+  /**
    * Get the config file path for an agent
    */
   static getConfigPath(agentId: string): string {
@@ -123,6 +130,50 @@ export class FileSystemStorage {
       return agents;
     } catch {
       return [];
+    }
+  }
+
+  /**
+   * Save passphrase (encrypted with machine-specific key)
+   * Passphrase is NEVER stored in plaintext!
+   */
+  static async savePassphrase(
+    agentId: string,
+    passphrase: string
+  ): Promise<void> {
+    const { MachineIdentity } = await import('../crypto/machine-identity');
+    
+    // Encrypt passphrase with machine-specific key
+    const encrypted = MachineIdentity.encrypt(passphrase);
+    
+    // Save encrypted passphrase
+    const passphrasePath = FileSystemStorage.getPassphrasePath(agentId);
+    await fs.writeFile(passphrasePath, encrypted, { mode: 0o600 });
+  }
+
+  /**
+   * Load passphrase (decrypt with machine-specific key)
+   * Only works on the same machine where it was saved
+   */
+  static async loadPassphrase(agentId: string): Promise<string> {
+    const { MachineIdentity } = await import('../crypto/machine-identity');
+    
+    const passphrasePath = FileSystemStorage.getPassphrasePath(agentId);
+    const encrypted = await fs.readFile(passphrasePath, 'utf-8');
+    
+    // Decrypt with machine-specific key
+    return MachineIdentity.decrypt(encrypted);
+  }
+
+  /**
+   * Check if passphrase file exists
+   */
+  static async hasPassphrase(agentId: string): Promise<boolean> {
+    try {
+      await fs.access(FileSystemStorage.getPassphrasePath(agentId));
+      return true;
+    } catch {
+      return false;
     }
   }
 }
