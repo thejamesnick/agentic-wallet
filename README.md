@@ -193,8 +193,12 @@ npm install -g @pocketagent/paw
 ### Quick Start
 
 ```bash
-# 1. Create a wallet for your agent
+# 1. Create a wallet for your agent (defaults to mainnet-beta)
 paw init my-trading-bot
+
+# Or specify network explicitly:
+# paw init my-trading-bot --network devnet  # For testing
+# paw init my-trading-bot --network mainnet-beta  # For real trading
 
 # 2. Get your wallet address
 paw address my-trading-bot

@@ -18,8 +18,12 @@ Key capabilities:
 ### Essential Commands
 
 ```bash
-# Create wallet
+# Create wallet (defaults to mainnet-beta for real trading)
 paw init <agent-id>
+
+# Or specify network:
+# paw init <agent-id> --network devnet  # For testing with free SOL
+# paw init <agent-id> --network mainnet-beta  # For real trading (default)
 
 # Get address
 paw address <agent-id>
@@ -200,11 +204,11 @@ Generated from:
 - Cleared from memory immediately after use
 - No plaintext secrets on disk
 
-## Getting Started on Devnet
+## Getting Started on Devnet (Testing)
 
 ```bash
-# 1. Create wallet
-paw init my-first-agent
+# 1. Create wallet on devnet for testing
+paw init my-first-agent --network devnet
 
 # 2. Get address
 ADDRESS=$(paw address my-first-agent | grep "Address:" | awk '{print $2}')
