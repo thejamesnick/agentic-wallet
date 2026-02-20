@@ -1,13 +1,23 @@
 {
   "name": "@pocketagent/paw",
-  "version": "0.1.0",
-  "description": "PocketAgent Wallet - Agentic wallet for AI agents on Solana 📟",
+  "version": "1.0.0",
+  "description": "PocketAgent Wallet - Lightning-fast agentic wallet for AI agents on Solana 📟",
   "main": "dist/index.js",
-  "bin": "dist/cli/index.js",
+  "types": "dist/index.d.ts",
+  "bin": {
+    "paw": "dist/cli/index.js"
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE",
+    "skills/SKILLS.md"
+  ],
   "scripts": {
     "build": "tsc",
     "dev": "tsc --watch",
     "start": "node dist/cli/index.js",
+    "prepublishOnly": "yarn build",
     "test": "jest",
     "lint": "eslint src --ext .ts",
     "format": "prettier --write \"src/**/*.ts\""
@@ -16,10 +26,17 @@
     "solana",
     "wallet",
     "ai-agent",
+    "agentic-wallet",
     "defi",
     "agentic",
     "autonomous",
-    "crypto"
+    "crypto",
+    "jupiter",
+    "dex",
+    "trading-bot",
+    "meme-trading",
+    "cli-wallet",
+    "blockchain"
   ],
   "author": "PocketAgent Team",
   "license": "MIT",
@@ -27,6 +44,10 @@
     "type": "git",
     "url": "https://github.com/thejamesnick/agentic-wallet.git"
   },
+  "bugs": {
+    "url": "https://github.com/thejamesnick/agentic-wallet/issues"
+  },
+  "homepage": "https://github.com/thejamesnick/agentic-wallet#readme",
   "engines": {
     "node": ">=18.0.0"
   },

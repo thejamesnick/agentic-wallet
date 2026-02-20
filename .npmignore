@@ -1,0 +1,44 @@
+# Source files (only ship compiled dist/)
+src/
+tsconfig.json
+
+# Development files
+.git/
+.github/
+node_modules/
+.yarn/
+
+# Documentation (keep only essential)
+about/
+technical/
+docs/
+examples/
+
+# Keep these in package
+!README.md
+!LICENSE
+!skills/SKILLS.md
+
+# Test files
+*.test.ts
+*.spec.ts
+__tests__/
+
+# Build artifacts
+*.log
+*.tgz
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Misc
+.env
+.env.local
+*.bak
