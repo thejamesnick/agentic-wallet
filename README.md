@@ -18,7 +18,7 @@ PAW provides:
 - **Automated Transaction Signing** - No manual approval needed
 - **SOL & SPL Token Support** - Full Solana token compatibility
 - **DeFi Protocol Integration** - Interact with Jupiter, Raydium, etc.
-- **Safe Key Management** - Secure storage for autonomous operations
+- **Safe Key Management** - SSH-style encryption (AES-256-GCM)
 - **Multi-Agent Support** - Each agent manages its own wallet independently
 - **Optional Monitoring Dashboard** - CLI/UI to observe agent activities
 
@@ -70,10 +70,28 @@ We're launching on Solana because:
 - **CLI Framework:** Commander.js
 - **Blockchain:** Solana (Devnet)
 - **Wallet Library:** @solana/web3.js
-- **Key Storage:** Encrypted JSON files (~/.paw/)
-- **Encryption:** Node.js crypto module
+- **Key Storage:** AES-256-GCM encrypted files (~/.paw/)
+- **Encryption:** SSH-style (encrypt at rest, decrypt in memory only)
 - **DeFi Integration:** Jupiter Aggregator API
 - **Package Manager:** npm
+
+## Security Model
+
+PAW uses an **SSH-style encryption model** for maximum security:
+
+- **At Rest:** Private keys encrypted with AES-256-GCM
+- **In Use:** Keys decrypted in memory only when signing
+- **After Use:** Keys immediately cleared from memory
+- **Never:** Keys stored in plaintext on disk or in logs
+
+**Key Features:**
+- 🔐 AES-256-GCM encryption (industry standard)
+- 🔑 PBKDF2 key derivation (100,000 iterations)
+- 🛡️ Passphrase protection
+- 🧹 Memory-safe (keys cleared after signing)
+- 🔒 Per-agent isolation
+
+See [SECURITY.md](about/SECURITY.md) for detailed security documentation.
 
 ## Project Structure
 
