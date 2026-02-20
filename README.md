@@ -1,6 +1,6 @@
 # PAW 📟
 
-**PocketAgent Wallet** - Agentic Wallets for Autonomous AI
+**PocketAgent Wallet** - Agentic Wallets for Autonomous AI Agents
 
 > Give your AI agents the power to manage their own crypto
 
