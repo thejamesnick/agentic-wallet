@@ -51,11 +51,23 @@ export const swapCommand = new Command('swap')
       }
 
       console.log('\nFetching quote from Jupiter...');
+      
+      // Load keypair first to get public key
+      const keypair = await WalletManager.loadKeypairAuto(options.agentId);
+      
+      // Load referral config if available
+      const referralConfig = JupiterClient.loadReferralConfig();
+      
       const quote = await JupiterClient.getQuote(
         inputMint,
         outputMint,
         amount,
-        parseInt(slippage.toString())
+        parseInt(slippage.toString()),
+        {
+          userPublicKey: keypair.publicKey.toBase58(),
+          referralAccount: referralConfig?.referralAccount,
+          referralFee: referralConfig?.referralFee,
+        }
       );
 
       // Display quote
@@ -68,34 +80,29 @@ export const swapCommand = new Command('swap')
       console.log('Output: ', outAmount, options.to);
       console.log('Price Impact:', quote.priceImpactPct, '%');
       console.log('Slippage:', slippage, 'bps', `(${(parseInt(slippage.toString()) / 100).toFixed(1)}%)`);
+      if (quote.feeBps && referralConfig) {
+        console.log('💰 Referral Fee:', quote.feeBps, 'bps', `(${(quote.feeBps / 100).toFixed(2)}%)`);
+        console.log('   You earn:', `${((quote.feeBps * 0.8) / 100).toFixed(2)}%`);
+      }
       if (priorityFee) {
         console.log('Priority Fee:', priorityFee, 'lamports');
       }
 
-      // Load keypair
-      const keypair = await WalletManager.loadKeypairAuto(options.agentId);
+      // Execute swap using Ultra API
+      console.log('\nExecuting swap...');
+      const result = await JupiterClient.executeSwap(quote, keypair);
 
-      // Get swap transaction
-      console.log('\nPreparing swap transaction...');
-      const priorityFeeValue = priorityFee ? parseInt(priorityFee.toString()) : undefined;
-      const swapTransaction = await JupiterClient.getSwapTransaction(
-        quote,
-        keypair.publicKey.toBase58(),
-        priorityFeeValue
-      );
-
-      // Execute swap
-      console.log('Executing swap...');
-      const connection = SolanaClient.getConnection(options.network as Cluster);
-      const signature = await JupiterClient.executeSwap(
-        connection,
-        swapTransaction,
-        keypair
-      );
-
-      console.log('\n✅ Swap completed!');
-      console.log('Signature:', signature);
-      console.log('Explorer:  https://explorer.solana.com/tx/' + signature);
+      if (result.status === 'Success') {
+        console.log('\n✅ Swap completed!');
+        console.log('Signature:', result.signature);
+        console.log('Explorer:  https://explorer.solana.com/tx/' + result.signature);
+        if (referralConfig) {
+          console.log('\n💰 Referral fee earned! Run "paw claim-fees" to withdraw.');
+        }
+      } else {
+        console.log('\n❌ Swap failed');
+        console.log('Details:', result);
+      }
       console.log('');
     } catch (error) {
       console.error('\n❌ Error:', (error as Error).message);

@@ -74,14 +74,19 @@ export class JupiterClient {
   }
 
   /**
-   * Get a quote for swapping tokens
+   * Get a quote for swapping tokens (with optional referral fee)
    */
   static async getQuote(
     inputMint: string,
     outputMint: string,
     amount: number,
-    slippageBps: number = 50
-  ): Promise<QuoteResponse> {
+    slippageBps: number = 50,
+    options?: {
+      userPublicKey?: string;
+      referralAccount?: string;
+      referralFee?: number; // in basis points (bps)
+    }
+  ): Promise<any> {
     const params = new URLSearchParams({
       inputMint,
       outputMint,
@@ -89,13 +94,24 @@ export class JupiterClient {
       slippageBps: slippageBps.toString(),
     });
 
+    // Add optional parameters for referral fees
+    if (options?.userPublicKey) {
+      params.append('taker', options.userPublicKey);
+    }
+    if (options?.referralAccount) {
+      params.append('referralAccount', options.referralAccount);
+    }
+    if (options?.referralFee) {
+      params.append('referralFee', options.referralFee.toString());
+    }
+
     const response = await fetch(`${JupiterClient.API_BASE}/order?${params}`);
 
     if (!response.ok) {
       throw new Error(`Jupiter API error: ${response.statusText}`);
     }
 
-    return (await response.json()) as QuoteResponse;
+    return await response.json();
   }
 
   /**
@@ -131,31 +147,75 @@ export class JupiterClient {
   }
 
   /**
-   * Execute a swap
+   * Execute a swap using Ultra API
    */
   static async executeSwap(
-    connection: Connection,
-    swapTransactionBase64: string,
+    orderResponse: any,
     keypair: any
-  ): Promise<string> {
-    // Deserialize transaction
-    const swapTransactionBuf = Buffer.from(swapTransactionBase64, 'base64');
-    const transaction = VersionedTransaction.deserialize(swapTransactionBuf);
-
-    // Sign transaction
+  ): Promise<{ signature: string; status: string }> {
+    // Deserialize and sign transaction
+    const transactionBuf = Buffer.from(orderResponse.transaction, 'base64');
+    const transaction = VersionedTransaction.deserialize(transactionBuf);
     transaction.sign([keypair]);
 
-    // Send transaction
-    const rawTransaction = transaction.serialize();
-    const txid = await connection.sendRawTransaction(rawTransaction, {
-      skipPreflight: true,
-      maxRetries: 2,
+    // Serialize signed transaction
+    const signedTransaction = Buffer.from(transaction.serialize()).toString('base64');
+
+    // Execute via Ultra API
+    const response = await fetch(`${JupiterClient.API_BASE}/execute`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        signedTransaction,
+        requestId: orderResponse.requestId,
+      }),
     });
 
-    // Confirm transaction
-    await connection.confirmTransaction(txid, 'confirmed');
+    if (!response.ok) {
+      throw new Error(`Jupiter execute error: ${response.statusText}`);
+    }
 
-    return txid;
+    const result = (await response.json()) as { signature: string; status: string };
+    return result;
+  }
+
+  /**
+   * Load referral configuration (FOUNDER'S referral account)
+   * This is hardcoded so the founder earns on all swaps
+   */
+  static loadReferralConfig(): { referralAccount: string; referralFee: number } | null {
+    // TODO: After running setup-referral.ts, paste your referral account here
+    // This way YOU (the founder) earn on every swap made by any agent using PAW!
+    const FOUNDER_REFERRAL_ACCOUNT = process.env.PAW_REFERRAL_ACCOUNT || null;
+    const FOUNDER_REFERRAL_FEE = parseInt(process.env.PAW_REFERRAL_FEE || '50'); // 0.5% (you keep 0.4%)
+
+    if (FOUNDER_REFERRAL_ACCOUNT) {
+      return {
+        referralAccount: FOUNDER_REFERRAL_ACCOUNT,
+        referralFee: FOUNDER_REFERRAL_FEE,
+      };
+    }
+
+    // Fallback: try to load from config file (for development)
+    try {
+      const fs = require('fs');
+      const path = require('path');
+      const os = require('os');
+      
+      const configPath = path.join(os.homedir(), '.paw', 'referral.json');
+      if (fs.existsSync(configPath)) {
+        const config = JSON.parse(fs.readFileSync(configPath, 'utf8'));
+        return {
+          referralAccount: config.referralAccount,
+          referralFee: config.referralFee || 50,
+        };
+      }
+    } catch (error) {
+      // Silently fail if config doesn't exist
+    }
+    return null;
   }
 
   /**
