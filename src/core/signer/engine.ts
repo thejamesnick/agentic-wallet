@@ -1,4 +1,4 @@
-import { Transaction, Keypair } from '@solana/web3.js';
+import { Transaction, Keypair, Connection } from '@solana/web3.js';
 import { WalletManager } from '../wallet/manager';
 import { EncryptionService } from '../storage/encryption';
 
@@ -66,6 +66,38 @@ export class SignerEngine {
       if (global.gc) {
         global.gc();
       }
+    }
+  }
+
+  /**
+   * Sign and send a transaction
+   */
+  static async signAndSend(
+    transaction: Transaction,
+    keypair: Keypair,
+    connection: Connection
+  ): Promise<string> {
+    try {
+      // Get recent blockhash
+      const { blockhash } = await connection.getLatestBlockhash();
+      transaction.recentBlockhash = blockhash;
+      transaction.feePayer = keypair.publicKey;
+
+      // Sign transaction
+      transaction.sign(keypair);
+
+      // Send transaction
+      const signature = await connection.sendRawTransaction(
+        transaction.serialize()
+      );
+
+      // Confirm transaction
+      await connection.confirmTransaction(signature, 'confirmed');
+
+      return signature;
+    } finally {
+      // Clear keypair from memory
+      EncryptionService.clearKeypair(keypair);
     }
   }
 }

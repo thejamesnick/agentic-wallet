@@ -153,22 +153,28 @@ npm install -g @pocketagent/paw
 
 ```bash
 # 1. Create a wallet for your agent
-paw init --agent-id my-trading-bot
+paw init my-trading-bot
 
 # 2. Get your wallet address
-paw address
+paw address my-trading-bot
 
 # 3. Fund it on Solana devnet (use faucet)
 # Visit: https://faucet.solana.com
 
 # 4. Check balance
-paw balance
+paw balance my-trading-bot
 
-# 5. Swap tokens
-paw swap --from SOL --to USDC --amount 1
+# 5. Send SOL
+paw send my-trading-bot --to <recipient-address> --amount 0.5
 
-# 6. Send SOL
-paw send --to <recipient-address> --amount 0.5
+# 6. View transaction history
+paw history my-trading-bot
+
+# 7. Swap tokens (mainnet only)
+paw swap my-trading-bot --from SOL --to USDC --amount 1
+
+# 8. Change network
+paw config my-trading-bot --network mainnet-beta
 ```
 
 ### For AI Agents
@@ -178,15 +184,31 @@ paw send --to <recipient-address> --amount 0.5
 const { exec } = require('child_process');
 
 // Initialize wallet
-exec('paw init --agent-id trading-bot-001');
+exec('paw init trading-bot-001');
 
 // Check balance
-exec('paw balance', (err, stdout) => {
-  console.log(stdout); // 5.2 SOL, 100 USDC
+exec('paw balance trading-bot-001', (err, stdout) => {
+  console.log(stdout); // 1.649990000 SOL
 });
 
 // Execute trade
-exec('paw swap --from SOL --to USDC --amount 1');
+exec('paw send trading-bot-001 --to <address> --amount 0.1');
+```
+
+### Programmatic Usage (TypeScript/Node.js)
+
+```typescript
+import { WalletManager, SolanaClient } from '@pocketagent/paw';
+
+// Create wallet
+const wallet = await WalletManager.createWallet({
+  agentId: 'trading-bot-001',
+  network: 'devnet',
+});
+
+// Check balance
+const balance = await SolanaClient.getBalance(wallet.address, 'devnet');
+console.log(`Balance: ${balance} SOL`);
 ```
 
 ## Roadmap
