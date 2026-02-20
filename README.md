@@ -17,10 +17,13 @@ PAW provides:
 - **Programmatic Wallet Creation** - AI agents create wallets on demand
 - **Automated Transaction Signing** - No manual approval needed
 - **SOL & SPL Token Support** - Full Solana token compatibility
-- **DeFi Protocol Integration** - Interact with Jupiter, Raydium, etc.
+- **DeFi Protocol Integration** - Jupiter DEX for best swap prices
+- **Lightning-Fast Execution** - Helius RPC for <2 second swaps
+- **Meme Trading Ready** - Configurable slippage and priority fees
+- **Real-Time Pricing** - Live SOL prices from CoinGecko
 - **Safe Key Management** - Double encryption (wallet + machine-specific passphrase)
 - **Multi-Agent Support** - Each agent manages its own wallet independently
-- **Optional Monitoring Dashboard** - CLI/UI to observe agent activities
+- **Interactive Dashboard** - Retro pager-style TUI for monitoring
 
 ## Submission Requirements
 
@@ -56,24 +59,61 @@ We're launching on Solana because:
 - 🌊 Rich DeFi ecosystem (Jupiter, Raydium, Marinade, etc.)
 - 📈 Growing AI agent community
 
+## Key Features
+
+### 🚀 Lightning-Fast Trading
+- **Helius RPC**: Premium endpoints for fastest execution
+- **<2 Second Swaps**: Fast enough to snipe meme launches
+- **Priority Fees**: Configurable fees for competitive trading
+- **Jupiter DEX**: Best prices across ALL Solana DEXs
+
+### 💰 Portfolio Management
+- **Real-Time Pricing**: Live SOL prices from CoinGecko
+- **Total Portfolio View**: See combined value of SOL + tokens in USD
+- **Multi-Token Support**: Trade any SPL token by mint address
+- **Transaction History**: Track all agent activities
+
+### 🎯 Meme Trading Ready
+- **Configurable Slippage**: Set high slippage for volatile tokens
+- **Custom Priority Fees**: Boost transaction speed during congestion
+- **Config Defaults**: Set slippage/fees once, use everywhere
+- **Popular Tokens**: Built-in support for BONK, WIF, POPCAT, etc.
+
+### 🔐 Enterprise Security
+- **Double Encryption**: Wallet + machine-specific passphrase
+- **Zero Plaintext**: All secrets encrypted at rest
+- **Memory Safe**: Keys cleared after use
+- **Theft Resistant**: Stolen files are useless
+
+### 📟 Retro Dashboard
+- **Pager-Style TUI**: Monochrome green-on-black aesthetic
+- **Real-Time Updates**: Auto-refresh every 30 seconds
+- **Transaction Feed**: Recent activity at a glance
+- **Keyboard Controls**: Navigate with arrow keys
+
 ## Use Cases
 
-- **Trading Bots** - Autonomous DEX trading with risk limits
+- **Meme Coin Trading** - Snipe launches, scalp pumps, automated take-profit
+- **High-Frequency Trading** - Execute trades at Telegram bot speed
 - **Yield Farmers** - Agents that optimize yield across protocols
 - **Portfolio Managers** - Rebalancing and diversification agents
 - **Arbitrage Agents** - Cross-DEX opportunity seekers
+- **DCA Bots** - Dollar-cost averaging strategies
 - **DAO Participants** - Agents that vote and manage treasury
 
 ## Tech Stack
 
 - **Language:** TypeScript/Node.js
 - **CLI Framework:** Commander.js
-- **Blockchain:** Solana (Devnet)
+- **Blockchain:** Solana (Devnet + Mainnet)
+- **RPC Provider:** Helius (premium endpoints)
 - **Wallet Library:** @solana/web3.js
 - **Key Storage:** AES-256-GCM encrypted files (~/.paw/)
-- **Encryption:** SSH-style (encrypt at rest, decrypt in memory only)
-- **DeFi Integration:** Jupiter Aggregator API
-- **Package Manager:** npm
+- **Encryption:** Double-layer (wallet + machine-specific)
+- **DeFi Integration:** Jupiter Aggregator API v6
+- **Price Feeds:** CoinGecko API
+- **Dashboard:** Blessed (retro TUI)
+- **Package Manager:** Yarn
 
 ## Security Model
 
@@ -161,20 +201,26 @@ paw address my-trading-bot
 # 3. Fund it on Solana devnet (use faucet)
 # Visit: https://faucet.solana.com
 
-# 4. Check balance
+# 4. Check total portfolio balance (SOL + tokens in USD)
 paw balance my-trading-bot
 
-# 5. Send SOL
+# 5. Configure for meme trading (mainnet)
+paw config my-trading-bot --network mainnet-beta --slippage 1000 --priority-fee 100000
+
+# 6. List all tokens
+paw tokens my-trading-bot
+
+# 7. Send SOL
 paw send my-trading-bot --to <recipient-address> --amount 0.5
 
-# 6. View transaction history
+# 8. Swap tokens (fast execution with Jupiter)
+paw swap my-trading-bot --from SOL --to BONK --amount 0.5
+
+# 9. View transaction history
 paw history my-trading-bot
 
-# 7. Swap tokens (mainnet only)
-paw swap my-trading-bot --from SOL --to USDC --amount 1
-
-# 8. Change network
-paw config my-trading-bot --network mainnet-beta
+# 10. Launch interactive dashboard
+paw dashboard my-trading-bot
 ```
 
 ### For AI Agents
@@ -186,13 +232,16 @@ const { exec } = require('child_process');
 // Initialize wallet
 exec('paw init trading-bot-001');
 
-// Check balance
+// Check total portfolio balance
 exec('paw balance trading-bot-001', (err, stdout) => {
-  console.log(stdout); // 1.649990000 SOL
+  console.log(stdout); 
+  // 💰 Total Portfolio:
+  //    ~1.649990 SOL
+  //    ~138.68 USD
 });
 
-// Execute trade
-exec('paw send trading-bot-001 --to <address> --amount 0.1');
+// Execute meme coin trade with high slippage
+exec('paw swap trading-bot-001 --from SOL --to BONK --amount 0.5 --slippage 1000 --priority-fee 100000');
 ```
 
 ### Programmatic Usage (TypeScript/Node.js)
