@@ -17,6 +17,8 @@
     "start": "node dist/cli/index.js",
     "prepublishOnly": "yarn build",
     "test": "jest",
+    "test:core": "jest --testPathIgnorePatterns=jupiter.test.ts integration.test.ts",
+    "test:all": "jest",
     "test:watch": "jest --watch",
     "test:coverage": "jest --coverage",
     "lint": "eslint src --ext .ts",

@@ -153,19 +153,19 @@ describe('FileSystemStorage', () => {
     });
   });
 
-  describe('getWalletPath', () => {
-    it('should return correct wallet path', () => {
-      const walletPath = FileSystemStorage.getWalletPath(testAgentId);
+  describe('getAgentDir', () => {
+    it('should return correct agent directory path', () => {
+      const agentDir = FileSystemStorage.getAgentDir(testAgentId);
 
-      expect(walletPath).toContain('.paw');
-      expect(walletPath).toContain('agents');
-      expect(walletPath).toContain(testAgentId);
+      expect(agentDir).toContain('.paw');
+      expect(agentDir).toContain('agents');
+      expect(agentDir).toContain(testAgentId);
     });
 
     it('should return absolute path', () => {
-      const walletPath = FileSystemStorage.getWalletPath(testAgentId);
+      const agentDir = FileSystemStorage.getAgentDir(testAgentId);
 
-      expect(path.isAbsolute(walletPath)).toBe(true);
+      expect(path.isAbsolute(agentDir)).toBe(true);
     });
   });
 });
