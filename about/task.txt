@@ -1,0 +1,48 @@
+Agentic Wallets for AI Agents
+
+https://superteam.fun/earn/listing/defi-developer-challenge-agentic-wallets-for-ai-agents/
+
+
+Yeah, this is solid! Let me break down why our PAW approach hits all their requirements:
+
+✅ Requirements Coverage
+Working agentic wallet that can:
+
+✅ Create wallet programmatically - PAW.createWallet()
+✅ Sign transactions automatically - Built into PAW core
+✅ Hold SOL or SPL tokens - Standard Solana wallet
+✅ Interact with test dApp/protocol - Jupiter integration
+Documentation:
+
+✅ Deep dive (video or written) - We'll do both
+✅ Open-source with README - Yep
+✅ SKILLS.md for agents - We'll create this
+Deployment:
+
+✅ Working prototype on devnet - That's the plan
+✅ What We're Building
+We're doing option 2: "Wallet integrated with a local AI agent simulation (e.g., trading bot)"
+
+Plus we can add option 3: "Test harness showing multiple agents each managing their own wallets" to show scalability.
+
+✅ Technical Expectations
+✅ Safe key management - Encrypted storage
+✅ Automated signing - No manual input
+✅ AI decision simulation - Simple trading bot logic
+✅ Clear separation - Agent logic separate from wallet ops
+✅ Judging Criteria
+✅ Functional demo - Trading bot using PAW
+✅ Security & key management - Encrypted keys, never exposed
+✅ Clear documentation - README, SKILLS.md, deep dive
+✅ Scalability - Multiple agents, each with own wallet
+
+Our Winning Formula:
+PAW Core → Wallet system (create, sign, store keys)
+PAW SDK → Easy API for agents
+Jupiter Integration → DeFi interaction
+Demo Trading Bot → AI agent simulation
+Multi-Agent Test → Show scalability
+CLI Tool → Optional monitoring
+Solid Docs → README, SKILLS.md, deep dive + video
+
+This checks every box. We're good to go! Want to start building the architecture?
