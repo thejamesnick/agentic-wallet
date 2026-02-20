@@ -39,15 +39,15 @@ paw init <agent-id> [options]
 
 **Options:**
 - `--passphrase <passphrase>` - Custom passphrase (auto-generated if not provided)
-- `--network <network>` - Network to use (devnet, mainnet-beta, testnet) [default: devnet]
+- `--network <network>` - Network to use (devnet, mainnet-beta, testnet) [default: mainnet-beta]
 
 **Examples:**
 ```bash
-# Create wallet on devnet (default)
+# Create wallet on mainnet (default)
 paw init trading-bot-001
 
-# Create wallet on mainnet
-paw init trading-bot-001 --network mainnet-beta
+# Create wallet on devnet for testing
+paw init trading-bot-001 --network devnet
 
 # Create wallet with custom passphrase
 paw init trading-bot-001 --passphrase "my-secure-passphrase"
@@ -62,7 +62,7 @@ Creating wallet for agent...
 
 Agent ID: trading-bot-001
 Address:  HWd4qkpz5r7c9zSFSUGy2MkkvwuvFd3tqiMkCLiMyb4D
-Network:  devnet
+Network:  mainnet-beta
 Created:  2026-02-20T08:45:37.696Z
 ```
 
@@ -93,7 +93,7 @@ Address:  HWd4qkpz5r7c9zSFSUGy2MkkvwuvFd3tqiMkCLiMyb4D
 
 ### `balance` - Check Balance
 
-Check SOL balance for an agent's wallet.
+Check total portfolio balance (SOL + SPL tokens) in both SOL and USD.
 
 **Syntax:**
 ```bash
@@ -109,7 +109,7 @@ paw balance <agent-id> [options]
 paw balance trading-bot-001
 
 # Check balance on specific network
-paw balance trading-bot-001 --network mainnet-beta
+paw balance trading-bot-001 --network devnet
 ```
 
 **Output:**
@@ -117,8 +117,11 @@ paw balance trading-bot-001 --network mainnet-beta
 📟 PAW - Balance
 Agent ID: trading-bot-001
 Address:  HWd4qkpz5r7c9zSFSUGy2MkkvwuvFd3tqiMkCLiMyb4D
-Balance:  1.649990000 SOL
-Network:  devnet
+Network:  mainnet-beta
+
+💰 Total Portfolio:
+   ~1.649990 SOL
+   ~138.68 USD
 ```
 
 ---
@@ -223,6 +226,7 @@ paw swap <agent-id> --from <token> --to <token> --amount <amount> [options]
 - `--to <token>` - Output token (SOL, USDC, USDT, BONK or mint address) (required)
 - `--amount <amount>` - Amount to swap (required)
 - `--slippage <bps>` - Slippage tolerance in basis points [default: 50]
+- `--priority-fee <lamports>` - Priority fee for faster execution [default: auto]
 - `--network <network>` - Override config network (Jupiter only works on mainnet-beta)
 
 **Examples:**
@@ -232,6 +236,9 @@ paw swap trading-bot-001 --from SOL --to USDC --amount 0.1 --network mainnet-bet
 
 # Swap with custom slippage
 paw swap trading-bot-001 --from SOL --to USDC --amount 0.1 --slippage 100
+
+# Swap with priority fee for faster execution
+paw swap trading-bot-001 --from SOL --to BONK --amount 0.5 --slippage 1000 --priority-fee 100000
 ```
 
 **Output:**
@@ -261,6 +268,70 @@ Explorer:  https://explorer.solana.com/tx/5KJh8F...
 
 ---
 
+### `tokens` - List All Tokens
+
+List all SPL tokens held by the agent's wallet.
+
+**Syntax:**
+```bash
+paw tokens <agent-id> [options]
+```
+
+**Options:**
+- `--network <network>` - Override config network
+
+**Examples:**
+```bash
+# List all tokens
+paw tokens trading-bot-001
+
+# List tokens on specific network
+paw tokens trading-bot-001 --network mainnet-beta
+```
+
+**Output:**
+```
+📟 PAW - Token Balances
+Agent ID: trading-bot-001
+Network:  mainnet-beta
+
+┌─────────────┬──────────────────────────────────────────────┬────────────────┐
+│ Symbol      │ Mint Address                                 │ Balance        │
+├─────────────┼──────────────────────────────────────────────┼────────────────┤
+│ SOL         │ Native                                       │ 1.649990       │
+├─────────────┼──────────────────────────────────────────────┼────────────────┤
+│ USDC        │ EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v │ 100.500000     │
+├─────────────┼──────────────────────────────────────────────┼────────────────┤
+│ BONK        │ DezXAZ8z7PnrnRJjz3wXBoRgixCa6xjnB7YaB1pPB263 │ 1000000.000000 │
+└─────────────┴──────────────────────────────────────────────┴────────────────┘
+```
+
+---
+
+### `dashboard` - Interactive Dashboard
+
+Launch an interactive TUI dashboard with real-time updates.
+
+**Syntax:**
+```bash
+paw dashboard <agent-id>
+```
+
+**Examples:**
+```bash
+# Launch dashboard
+paw dashboard trading-bot-001
+```
+
+**Features:**
+- Real-time balance updates (auto-refresh every 30 seconds)
+- Recent transaction feed
+- Total portfolio value in SOL and USD
+- Retro pager-style monochrome interface
+- Keyboard controls: Arrow keys to scroll, R to refresh, Q to quit
+
+---
+
 ### `config` - View/Update Configuration
 
 View or update wallet configuration.
@@ -272,6 +343,8 @@ paw config <agent-id> [options]
 
 **Options:**
 - `--network <network>` - Set network (devnet, mainnet-beta, testnet)
+- `--slippage <bps>` - Set default slippage in basis points (e.g., 50 = 0.5%, 1000 = 10%)
+- `--priority-fee <lamports>` - Set default priority fee in lamports
 - `--show` - Show current configuration
 
 **Examples:**
@@ -282,8 +355,14 @@ paw config trading-bot-001 --show
 # Change network to mainnet
 paw config trading-bot-001 --network mainnet-beta
 
-# Change network to devnet
-paw config trading-bot-001 --network devnet
+# Set default slippage for meme trading
+paw config trading-bot-001 --slippage 1000
+
+# Set default priority fee
+paw config trading-bot-001 --priority-fee 100000
+
+# Set multiple settings at once
+paw config trading-bot-001 --network mainnet-beta --slippage 1000 --priority-fee 100000
 ```
 
 **Output (show):**
@@ -291,7 +370,9 @@ paw config trading-bot-001 --network devnet
 📟 PAW - Wallet Configuration
 Agent ID: trading-bot-001
 Address:  HWd4qkpz5r7c9zSFSUGy2MkkvwuvFd3tqiMkCLiMyb4D
-Network:  devnet
+Network:  mainnet-beta
+Default Slippage: 50 bps
+Default Priority Fee: auto
 Created:  2/20/2026, 9:45:37 AM
 ```
 
