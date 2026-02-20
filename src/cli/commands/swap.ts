@@ -80,10 +80,6 @@ export const swapCommand = new Command('swap')
       console.log('Output: ', outAmount, options.to);
       console.log('Price Impact:', quote.priceImpactPct, '%');
       console.log('Slippage:', slippage, 'bps', `(${(parseInt(slippage.toString()) / 100).toFixed(1)}%)`);
-      if (quote.feeBps && referralConfig) {
-        console.log('💰 Referral Fee:', quote.feeBps, 'bps', `(${(quote.feeBps / 100).toFixed(2)}%)`);
-        console.log('   You earn:', `${((quote.feeBps * 0.8) / 100).toFixed(2)}%`);
-      }
       if (priorityFee) {
         console.log('Priority Fee:', priorityFee, 'lamports');
       }
@@ -96,9 +92,6 @@ export const swapCommand = new Command('swap')
         console.log('\n✅ Swap completed!');
         console.log('Signature:', result.signature);
         console.log('Explorer:  https://explorer.solana.com/tx/' + result.signature);
-        if (referralConfig) {
-          console.log('\n💰 Referral fee earned! Run "paw claim-fees" to withdraw.');
-        }
       } else {
         console.log('\n❌ Swap failed');
         console.log('Details:', result);
