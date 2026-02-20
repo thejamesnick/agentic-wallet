@@ -21,14 +21,15 @@ interface SwapRequest {
 }
 
 export class JupiterClient {
-  private static readonly API_BASE = 'https://quote-api.jup.ag/v6';
+  private static readonly API_BASE = 'https://lite-api.jup.ag/ultra/v1';
+  private static readonly TOKEN_API = 'https://lite-api.jup.ag/tokens/v2';
   private static tokenListCache: Map<string, any> | null = null;
 
   /**
    * Get list of all tokens supported by Jupiter
    */
   static async getTokenList(): Promise<any[]> {
-    const response = await fetch('https://token.jup.ag/all');
+    const response = await fetch(`${JupiterClient.TOKEN_API}/search?query=`);
 
     if (!response.ok) {
       throw new Error(`Jupiter token list error: ${response.statusText}`);
@@ -41,17 +42,35 @@ export class JupiterClient {
    * Search for a token by symbol or address
    */
   static async findToken(symbolOrAddress: string): Promise<any | null> {
-    // Load token list if not cached
-    if (!JupiterClient.tokenListCache) {
-      const tokens = await JupiterClient.getTokenList();
-      JupiterClient.tokenListCache = new Map();
-      tokens.forEach((token) => {
-        JupiterClient.tokenListCache!.set(token.address, token);
-        JupiterClient.tokenListCache!.set(token.symbol.toUpperCase(), token);
-      });
+    // Search using the new API
+    const response = await fetch(
+      `${JupiterClient.TOKEN_API}/search?query=${encodeURIComponent(symbolOrAddress)}`
+    );
+
+    if (!response.ok) {
+      return null;
     }
 
-    return JupiterClient.tokenListCache.get(symbolOrAddress.toUpperCase()) || null;
+    const tokens = (await response.json()) as any[];
+    
+    if (!tokens || tokens.length === 0) {
+      return null;
+    }
+
+    // Find exact match by symbol or id (address)
+    const exactMatch = tokens.find(
+      (t: any) =>
+        t.symbol?.toUpperCase() === symbolOrAddress.toUpperCase() ||
+        t.id === symbolOrAddress
+    );
+
+    // Return exact match or first result, normalizing to use 'address' field
+    const token = exactMatch || tokens[0];
+    if (token && !token.address && token.id) {
+      token.address = token.id; // Normalize: add 'address' field from 'id'
+    }
+
+    return token;
   }
 
   /**
@@ -70,7 +89,7 @@ export class JupiterClient {
       slippageBps: slippageBps.toString(),
     });
 
-    const response = await fetch(`${JupiterClient.API_BASE}/quote?${params}`);
+    const response = await fetch(`${JupiterClient.API_BASE}/order?${params}`);
 
     if (!response.ok) {
       throw new Error(`Jupiter API error: ${response.statusText}`);
