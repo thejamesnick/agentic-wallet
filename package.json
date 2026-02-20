@@ -1,0 +1,48 @@
+{
+  "name": "@pocketagent/paw",
+  "version": "0.1.0",
+  "description": "PocketAgent Wallet - Agentic wallet for AI agents on Solana 📟",
+  "main": "dist/index.js",
+  "bin": "dist/cli/index.js",
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch",
+    "start": "node dist/cli/index.js",
+    "test": "jest",
+    "lint": "eslint src --ext .ts",
+    "format": "prettier --write \"src/**/*.ts\""
+  },
+  "keywords": [
+    "solana",
+    "wallet",
+    "ai-agent",
+    "defi",
+    "agentic",
+    "autonomous",
+    "crypto"
+  ],
+  "author": "PocketAgent Team",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/thejamesnick/agentic-wallet.git"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "packageManager": "yarn@4.5.2",
+  "dependencies": {
+    "@solana/web3.js": "^1.98.4",
+    "bs58": "^6.0.0",
+    "commander": "^14.0.3"
+  },
+  "devDependencies": {
+    "@types/node": "^25.3.0",
+    "@typescript-eslint/eslint-plugin": "^8.56.0",
+    "@typescript-eslint/parser": "^8.56.0",
+    "eslint": "^10.0.0",
+    "prettier": "^3.8.1",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.9.3"
+  }
+}
