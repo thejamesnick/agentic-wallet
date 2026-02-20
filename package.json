@@ -4,9 +4,7 @@
   "description": "PocketAgent Wallet - Lightning-fast agentic wallet for AI agents on Solana 📟",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
-  "bin": {
-    "paw": "dist/cli/index.js"
-  },
+  "bin": "dist/cli/index.js",
   "files": [
     "dist",
     "README.md",
@@ -19,6 +17,8 @@
     "start": "node dist/cli/index.js",
     "prepublishOnly": "yarn build",
     "test": "jest",
+    "test:watch": "jest --watch",
+    "test:coverage": "jest --coverage",
     "lint": "eslint src --ext .ts",
     "format": "prettier --write \"src/**/*.ts\""
   },
@@ -63,11 +63,14 @@
   },
   "devDependencies": {
     "@types/blessed": "^0",
+    "@types/jest": "^30.0.0",
     "@types/node": "^25.3.0",
     "@typescript-eslint/eslint-plugin": "^8.56.0",
     "@typescript-eslint/parser": "^8.56.0",
     "eslint": "^10.0.0",
+    "jest": "^30.2.0",
     "prettier": "^3.8.1",
+    "ts-jest": "^29.4.6",
     "ts-node": "^10.9.2",
     "typescript": "^5.9.3"
   }
