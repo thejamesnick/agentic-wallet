@@ -33,12 +33,21 @@ async function setupReferralAccount() {
   const connection = new Connection(rpcUrl);
   console.log(`📡 Connected to ${network}`);
 
-  // Load or create wallet
-  const walletPath = path.join(os.homedir(), '.config', 'solana', 'id.json');
-  if (!fs.existsSync(walletPath)) {
-    console.error('❌ No Solana wallet found at ~/.config/solana/id.json');
-    console.log('💡 Create one with: solana-keygen new');
-    process.exit(1);
+  // Load or create referral wallet
+  const referralWalletPath = path.join(os.homedir(), '.config', 'solana', 'jup-referral.json');
+  const mainWalletPath = path.join(os.homedir(), '.config', 'solana', 'id.json');
+  
+  let walletPath = referralWalletPath;
+  if (!fs.existsSync(referralWalletPath)) {
+    console.log('⚠️  No dedicated referral wallet found');
+    if (fs.existsSync(mainWalletPath)) {
+      console.log('💡 Using main wallet instead');
+      walletPath = mainWalletPath;
+    } else {
+      console.error('❌ No Solana wallet found!');
+      console.log('💡 Run: yarn ts-node scripts/check-wallet.ts');
+      process.exit(1);
+    }
   }
 
   const privateKeyArray = JSON.parse(fs.readFileSync(walletPath, 'utf8'));
