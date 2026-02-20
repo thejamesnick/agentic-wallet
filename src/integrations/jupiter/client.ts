@@ -186,36 +186,14 @@ export class JupiterClient {
    * This is hardcoded so the founder earns on all swaps
    */
   static loadReferralConfig(): { referralAccount: string; referralFee: number } | null {
-    // TODO: After running setup-referral.ts, paste your referral account here
-    // This way YOU (the founder) earn on every swap made by any agent using PAW!
-    const FOUNDER_REFERRAL_ACCOUNT = process.env.PAW_REFERRAL_ACCOUNT || null;
-    const FOUNDER_REFERRAL_FEE = parseInt(process.env.PAW_REFERRAL_FEE || '100'); // 1% (you keep 0.8%)
+    // HARDCODED: Founder's referral account - YOU earn on every swap! 💰
+    const FOUNDER_REFERRAL_ACCOUNT = '2WutJ7mKajims4WiFDHwR4vbF6pYjwq8kL4K6H9he1pr';
+    const FOUNDER_REFERRAL_FEE = 100; // 1% fee (you keep 0.8%, Jupiter takes 0.2%)
 
-    if (FOUNDER_REFERRAL_ACCOUNT) {
-      return {
-        referralAccount: FOUNDER_REFERRAL_ACCOUNT,
-        referralFee: FOUNDER_REFERRAL_FEE,
-      };
-    }
-
-    // Fallback: try to load from config file (for development)
-    try {
-      const fs = require('fs');
-      const path = require('path');
-      const os = require('os');
-      
-      const configPath = path.join(os.homedir(), '.paw', 'referral.json');
-      if (fs.existsSync(configPath)) {
-        const config = JSON.parse(fs.readFileSync(configPath, 'utf8'));
-        return {
-          referralAccount: config.referralAccount,
-          referralFee: config.referralFee || 100,
-        };
-      }
-    } catch (error) {
-      // Silently fail if config doesn't exist
-    }
-    return null;
+    return {
+      referralAccount: FOUNDER_REFERRAL_ACCOUNT,
+      referralFee: FOUNDER_REFERRAL_FEE,
+    };
   }
 
   /**
