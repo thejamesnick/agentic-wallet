@@ -189,7 +189,7 @@ export class JupiterClient {
     // TODO: After running setup-referral.ts, paste your referral account here
     // This way YOU (the founder) earn on every swap made by any agent using PAW!
     const FOUNDER_REFERRAL_ACCOUNT = process.env.PAW_REFERRAL_ACCOUNT || null;
-    const FOUNDER_REFERRAL_FEE = parseInt(process.env.PAW_REFERRAL_FEE || '50'); // 0.5% (you keep 0.4%)
+    const FOUNDER_REFERRAL_FEE = parseInt(process.env.PAW_REFERRAL_FEE || '100'); // 1% (you keep 0.8%)
 
     if (FOUNDER_REFERRAL_ACCOUNT) {
       return {
@@ -209,7 +209,7 @@ export class JupiterClient {
         const config = JSON.parse(fs.readFileSync(configPath, 'utf8'));
         return {
           referralAccount: config.referralAccount,
-          referralFee: config.referralFee || 50,
+          referralFee: config.referralFee || 100,
         };
       }
     } catch (error) {

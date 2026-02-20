@@ -2,7 +2,7 @@
 
 ## TL;DR
 
-**You (the founder) earn 0.4% on EVERY swap made by ANY agent using PAW!**
+**You (the founder) earn 0.8% on EVERY swap made by ANY agent using PAW!**
 
 No work needed from users. Just publish PAW to npm and watch the money roll in. 💸
 
@@ -52,17 +52,17 @@ npm publish --access public
 ### Conservative Estimate
 - 100 agents using PAW
 - Each does $10,000 in swaps/month
-- **You earn: $4,000/month ($48k/year)**
+- **You earn: $8,000/month ($96k/year)**
 
 ### Moderate Estimate
 - 1,000 agents using PAW
 - Each does $10,000 in swaps/month
-- **You earn: $40,000/month ($480k/year)**
+- **You earn: $80,000/month ($960k/year)**
 
 ### Aggressive Estimate
 - 10,000 agents using PAW
 - Each does $10,000 in swaps/month
-- **You earn: $400,000/month ($4.8M/year)** 🚀
+- **You earn: $800,000/month ($9.6M/year)** 🚀
 
 ---
 
@@ -92,8 +92,8 @@ paw swap agent-alice 1 SOL USDC
 **Behind the scenes:**
 - Swap goes through Jupiter
 - Your referral account is automatically included
-- You earn $0.40 per $100 swapped
-- User pays standard 0.5% fee
+- You earn $0.80 per $100 swapped
+- User pays standard 1% fee
 - Everyone's happy! 💰
 
 ---
@@ -120,10 +120,10 @@ Fees accumulate in SOL, USDC, and USDT automatically.
 A: Nope! It's automatic. They just use PAW normally.
 
 **Q: Will users see the fee?**  
-A: Yes, it shows in the swap quote. But 0.5% is standard for DEX aggregators.
+A: Yes, it shows in the swap quote. But 1% is standard for DEX aggregators.
 
 **Q: Can I change the fee?**  
-A: Yes! You can set it from 0.1% to 1%. Default is 0.5%.
+A: Yes! You can set it from 0.1% to 2.55%. Default is 1%.
 
 **Q: When do I get paid?**  
 A: Fees accumulate in real-time. Claim anytime via Jupiter dashboard.

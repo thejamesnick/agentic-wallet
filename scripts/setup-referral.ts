@@ -96,7 +96,7 @@ async function setupReferralAccount() {
   console.log('\n💾 Step 3: Saving configuration...');
   const config = {
     referralAccount: referralAccountPubKey.toBase58(),
-    referralFee: 50, // 0.5% fee (you keep 0.4%, Jupiter takes 0.1%)
+    referralFee: 100, // 1% fee (you keep 0.8%, Jupiter takes 0.2%)
     tokenAccounts,
     network,
     createdAt: new Date().toISOString(),
@@ -110,9 +110,9 @@ async function setupReferralAccount() {
   console.log('🎉 Setup Complete!\n');
   console.log('📊 Your Referral Configuration:');
   console.log(`   Referral Account: ${config.referralAccount}`);
-  console.log(`   Fee Rate: ${config.referralFee} bps (0.5%)`);
-  console.log(`   Your Cut: 0.4% per swap`);
-  console.log(`   Jupiter Cut: 0.1% per swap\n`);
+  console.log(`   Fee Rate: ${config.referralFee} bps (1%)`);
+  console.log(`   Your Cut: 0.8% per swap`);
+  console.log(`   Jupiter Cut: 0.2% per swap\n`);
   console.log('💡 Next Steps:');
   console.log('   1. PAW will automatically use this referral account for all swaps');
   console.log('   2. Fees accumulate in your token accounts');

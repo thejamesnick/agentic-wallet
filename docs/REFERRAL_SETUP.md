@@ -7,18 +7,18 @@ As the founder of PAW, you earn a percentage of EVERY swap made by ANY agent usi
 **Revenue Model:**
 - User swaps tokens using PAW
 - Jupiter charges a small fee
-- **You get 0.4% of every swap** 💸
-- Jupiter keeps 0.1%
-- User pays 0.5% total
+- **You get 0.8% of every swap** 💸
+- Jupiter keeps 0.2%
+- User pays 1% total
 
 **Example:**
 - Agent swaps $1,000 worth of tokens
-- You earn: $4
-- Jupiter earns: $1
-- User pays: $5 total fee
+- You earn: $8
+- Jupiter earns: $2
+- User pays: $10 total fee
 
 If 100 agents each do $10,000 in swaps per month:
-- **You earn: $4,000/month** 🚀
+- **You earn: $8,000/month** 🚀
 
 ---
 
@@ -48,7 +48,7 @@ After running the setup, you'll get your referral account address. Add it to you
 
 ```bash
 PAW_REFERRAL_ACCOUNT=YourReferralAccountAddressHere
-PAW_REFERRAL_FEE=50  # 50 bps = 0.5% (you keep 0.4%)
+PAW_REFERRAL_FEE=100  # 100 bps = 1% (you keep 0.8%)
 ```
 
 ### Step 4: Build and Publish
@@ -120,18 +120,18 @@ for (const tx of transactions) {
 
 **Conservative (100 agents, $10k/month each):**
 - Volume: $1M/month
-- Your cut: $4,000/month
-- Annual: $48,000/year
+- Your cut: $8,000/month
+- Annual: $96,000/year
 
 **Moderate (1,000 agents, $10k/month each):**
 - Volume: $10M/month
-- Your cut: $40,000/month
-- Annual: $480,000/year
+- Your cut: $80,000/month
+- Annual: $960,000/year
 
 **Aggressive (10,000 agents, $10k/month each):**
 - Volume: $100M/month
-- Your cut: $400,000/month
-- Annual: $4.8M/year 🚀
+- Your cut: $800,000/month
+- Annual: $9.6M/year 🚀
 
 ---
 

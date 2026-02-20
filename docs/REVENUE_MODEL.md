@@ -44,41 +44,41 @@
 
 ### 2. **Fee Structure**
 ```
-Total Fee:     0.5% (50 bps)
-Your Share:    0.4% (40 bps) = 80%
-Jupiter Share: 0.1% (10 bps) = 20%
+Total Fee:     1% (100 bps)
+Your Share:    0.8% (80 bps) = 80%
+Jupiter Share: 0.2% (20 bps) = 20%
 ```
 
 ### 3. **Example Scenarios**
 
 **Small Agent (Hobby Trader)**
 - Monthly volume: $1,000
-- Your earnings: $4/month
-- Annual: $48/year
+- Your earnings: $8/month
+- Annual: $96/year
 
 **Medium Agent (Active Trader)**
 - Monthly volume: $10,000
-- Your earnings: $40/month
-- Annual: $480/year
+- Your earnings: $80/month
+- Annual: $960/year
 
 **Large Agent (Trading Bot)**
 - Monthly volume: $100,000
-- Your earnings: $400/month
-- Annual: $4,800/year
+- Your earnings: $800/month
+- Annual: $9,600/year
 
 **Whale Agent (Institutional)**
 - Monthly volume: $1,000,000
-- Your earnings: $4,000/month
-- Annual: $48,000/year
+- Your earnings: $8,000/month
+- Annual: $96,000/year
 
 ### 4. **Scale Economics**
 
 | # of Agents | Avg Volume/Agent | Total Volume | Your Monthly Revenue |
 |-------------|------------------|--------------|---------------------|
-| 10          | $10,000         | $100K        | $400                |
-| 100         | $10,000         | $1M          | $4,000              |
-| 1,000       | $10,000         | $10M         | $40,000             |
-| 10,000      | $10,000         | $100M        | $400,000            |
+| 10          | $10,000         | $100K        | $800                |
+| 100         | $10,000         | $1M          | $8,000              |
+| 1,000       | $10,000         | $10M         | $80,000             |
+| 10,000      | $10,000         | $100M        | $800,000            |
 
 ---
 
@@ -136,17 +136,17 @@ Jupiter Share: 0.1% (10 bps) = 20%
 
 ### Phase 1: Launch (Month 1-3)
 - Target: 100 agents
-- Revenue: $4,000/month
+- Revenue: $8,000/month
 - Focus: Documentation, examples, tutorials
 
 ### Phase 2: Growth (Month 4-12)
 - Target: 1,000 agents
-- Revenue: $40,000/month
+- Revenue: $80,000/month
 - Focus: Community, integrations, partnerships
 
 ### Phase 3: Scale (Year 2+)
 - Target: 10,000+ agents
-- Revenue: $400,000+/month
+- Revenue: $800,000+/month
 - Focus: Enterprise features, premium tiers
 
 ---
@@ -165,9 +165,9 @@ Jupiter Share: 0.1% (10 bps) = 20%
 - Better trading strategies
 
 ### 3. **Add Premium Tiers**
-- Free: 0.5% fee
-- Pro: 0.3% fee + $50/month
-- Enterprise: 0.2% fee + $500/month + support
+- Free: 1% fee
+- Pro: 0.75% fee + $50/month
+- Enterprise: 0.5% fee + $500/month + support
 
 ### 4. **Referral Program**
 - Users refer other users
