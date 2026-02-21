@@ -1,6 +1,6 @@
 {
   "name": "@pocketagent/paw",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "PocketAgent Wallet - agentic wallet for AI agents on Solana 📟",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",

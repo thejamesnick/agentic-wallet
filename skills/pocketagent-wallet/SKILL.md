@@ -7,7 +7,7 @@ description: >-
 license: MIT
 metadata:
   author: PocketAgent Team
-  version: "1.0.2"
+  version: "1.0.3"
   category: wallet
 ---
 
