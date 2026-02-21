@@ -9,7 +9,7 @@
     "dist",
     "README.md",
     "LICENSE",
-    "skills/SKILLS.md"
+    "skills/**/*"
   ],
   "scripts": {
     "build": "tsc",
