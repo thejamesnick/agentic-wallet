@@ -1,3 +1,16 @@
+---
+name: pocketagent-wallet
+description: >-
+  Lightning-fast autonomous wallet for AI agents on Solana. Use for wallet creation,
+  crypto transactions, token swaps, DeFi trading, Jupiter DEX, meme coin trading,
+  Solana payments, autonomous trading bots, portfolio management, and agentic wallets.
+license: MIT
+metadata:
+  author: PocketAgent Team
+  version: "1.0.2"
+  category: wallet
+---
+
 # 📟 PAW Skills for AI Agents
 
 **PocketAgent Wallet (PAW)** - Lightning-fast autonomous wallet for AI agents on Solana
