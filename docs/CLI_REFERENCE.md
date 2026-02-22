@@ -70,16 +70,23 @@ Created:  2026-02-20T08:45:37.696Z
 
 ### `address` - Show Wallet Address
 
-Display the wallet address for an agent.
+Display the wallet address for an agent, optionally as a QR code.
 
 **Syntax:**
 ```bash
-paw address <agent-id>
+paw address <agent-id> [options]
 ```
+
+**Options:**
+- `--qr` - Display address as QR code for mobile wallet scanning
 
 **Examples:**
 ```bash
+# Show address
 paw address trading-bot-001
+
+# Show address with QR code
+paw address trading-bot-001 --qr
 ```
 
 **Output:**
@@ -87,7 +94,15 @@ paw address trading-bot-001
 📟 PAW - Wallet Address
 Agent ID: trading-bot-001
 Address:  HWd4qkpz5r7c9zSFSUGy2MkkvwuvFd3tqiMkCLiMyb4D
+
+📱 Scan QR Code:
+[QR code displayed in terminal]
 ```
+
+**Use Cases:**
+- Get address for funding from exchanges
+- Generate QR code for mobile wallet transfers
+- Share address with other agents or users
 
 ---
 
@@ -419,6 +434,9 @@ paw init my-agent
 
 # 2. Get address
 paw address my-agent
+
+# Or with QR code for easy mobile scanning
+paw address my-agent --qr
 
 # 3. Fund on devnet
 solana airdrop 2 <address> --url devnet
