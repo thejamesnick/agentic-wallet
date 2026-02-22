@@ -68,6 +68,54 @@ Created:  2026-02-20T08:45:37.696Z
 
 ---
 
+### `import` - Import Existing Wallet
+
+Import an existing wallet from a private key.
+
+**Syntax:**
+```bash
+paw import <agent-id> --private-key <key> [options]
+```
+
+**Options:**
+- `--private-key <key>` - Base58 encoded private key (required)
+- `--network <network>` - Network to use (devnet, mainnet-beta, testnet) [default: mainnet-beta]
+
+**Examples:**
+```bash
+# Import wallet from Phantom/Solflare
+paw import my-imported-wallet --private-key 3eXTrtY2LtxLc7AemP9qD6UMcAszXhbSF8tffEU4xM43JSGgsd9f8vrR1ur6k6MuThiwcH3fdL2WB5q1J5FgVPjC
+
+# Import on devnet
+paw import test-wallet --private-key <key> --network devnet
+```
+
+**Output:**
+```
+📟 PAW - Import Wallet
+Agent ID: my-imported-wallet
+Network:  mainnet-beta
+
+✅ Wallet imported successfully!
+
+Agent ID: my-imported-wallet
+Address:  32FiUrjyfETyz5vktLRpAQW3C95WKJJSdK8TepCGuFCJ
+Network:  mainnet-beta
+```
+
+**Use Cases:**
+- Migrate existing wallet from Phantom or Solflare
+- Use same wallet across multiple machines
+- Import wallet from another Solana tool
+- Share wallet access with AI agents
+
+**Notes:**
+- Private key must be base58 encoded (standard Solana format)
+- Agent ID must not already exist
+- Wallet is encrypted and stored securely after import
+
+---
+
 ### `address` - Show Wallet Address
 
 Display the wallet address for an agent, optionally as a QR code.

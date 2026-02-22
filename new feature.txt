@@ -6,23 +6,24 @@ PAW - New Features List
    - Command: paw address <agent-id> --qr
    - Useful for: Quick funding, mobile wallet transfers
 
-2. Export Seed Phrase & Private Key 
-   - Export wallet seed phrase (12/24 words) for backup
-   - Export raw private key for importing to other wallets
-   - Command: paw export <agent-id> --seed or --private-key
+2. Export Private Key ✅
+   - Export wallet private key for backup or migration
+   - Command: paw export <agent-id>
    - Security: 
      * Shows warning about security risks
      * Interactive: Requires typing agent ID to confirm
      * Automated: Use --confirm flag to skip prompt
-     * Example: paw export agent-alice --seed --confirm agent-alice
-   - Useful for: Wallet backup, migration to other wallets
+     * Example: paw export agent-alice --confirm agent-alice
+   - Useful for: Wallet backup, importing to Phantom/Solflare/other wallets
    - AI Agent friendly: Can automate with --confirm flag
+   - Note: Private key can be imported into any Solana wallet
 
-3. Import Wallet
-   - Import existing wallet from seed phrase or private key
+3. Import Wallet ✅
+   - Import existing wallet from private key
    - Allows using existing wallets with PAW
-   - Command: paw import <agent-id> --seed "word1 word2..." or --private-key "base58key"
-   - Useful for: Migrating existing wallets, using hardware wallet addresses
+   - Command: paw import <agent-id> --private-key "base58key"
+   - Useful for: Migrating existing wallets, using Phantom/Solflare wallets with PAW
+   - Note: Only private key import supported (not seed phrases)
 
 4. Multi-Send
    - Send SOL/tokens to multiple addresses in one command

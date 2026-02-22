@@ -11,6 +11,7 @@ import { configCommand } from './commands/config';
 import { tokensCommand } from './commands/tokens';
 import { dashboardCommand } from './commands/dashboard';
 import { exportCommand } from './commands/export';
+import { importCommand } from './commands/import';
 
 const program = new Command();
 
@@ -21,6 +22,7 @@ program
 
 // Register commands
 program.addCommand(initCommand);
+program.addCommand(importCommand);
 program.addCommand(dashboardCommand);
 program.addCommand(configCommand);
 program.addCommand(addressCommand);

@@ -25,6 +25,9 @@ paw init <agent-id>
 # paw init <agent-id> --network devnet  # For testing with free SOL
 # paw init <agent-id> --network mainnet-beta  # For real trading (default)
 
+# Import existing wallet from private key
+paw import <agent-id> --private-key <base58-private-key>
+
 # Get address
 paw address <agent-id>
 
