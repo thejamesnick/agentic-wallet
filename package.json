@@ -62,12 +62,14 @@
     "bs58": "^6.0.0",
     "chalk": "^5.6.2",
     "cli-table3": "^0.6.5",
-    "commander": "^14.0.3"
+    "commander": "^14.0.3",
+    "qrcode-terminal": "^0.12.0"
   },
   "devDependencies": {
     "@types/blessed": "^0",
     "@types/jest": "^30.0.0",
     "@types/node": "^25.3.0",
+    "@types/qrcode-terminal": "^0",
     "@typescript-eslint/eslint-plugin": "^8.56.0",
     "@typescript-eslint/parser": "^8.56.0",
     "eslint": "^10.0.0",
