@@ -137,7 +137,7 @@ export const dashboardCommand = new Command('dashboard')
           
           // Agent info
           content += `{green-fg}AGENT:{/green-fg} ${agentId}\n`;
-          content += `{green-fg}ADDR:{/green-fg}  ${walletInfo.address.slice(0, 20)}...\n`;
+          content += `{green-fg}ADDR:{/green-fg}  ${walletInfo.address}\n`;
           content += `{green-fg}NET:{/green-fg}   ${network.toUpperCase()}\n`;
           content += '\n';
           content += '───────────────────────────────────────────────────────────\n';
