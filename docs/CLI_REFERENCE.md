@@ -248,9 +248,9 @@ Network:  mainnet-beta
 
 ---
 
-### `send` - Send SOL
+### `send` - Send SOL or SPL Tokens
 
-Send SOL to another address.
+Send SOL or SPL tokens to another address.
 
 **Syntax:**
 ```bash
@@ -259,7 +259,8 @@ paw send <agent-id> --to <address> --amount <amount> [options]
 
 **Options:**
 - `--to <address>` - Recipient address (required)
-- `--amount <amount>` - Amount in SOL (required)
+- `--amount <amount>` - Amount to send (required)
+- `--token <mint>` - SPL token mint address (omit for SOL)
 - `--network <network>` - Override config network
 
 **Examples:**
@@ -267,11 +268,17 @@ paw send <agent-id> --to <address> --amount <amount> [options]
 # Send 0.1 SOL
 paw send trading-bot-001 --to DJcVfT6dienfSbudJzZ82WN4EkVPgVaT18oBK971Yi2c --amount 0.1
 
+# Send 10 USDC (SPL token)
+paw send trading-bot-001 --to DJcVfT6dienfSbudJzZ82WN4EkVPgVaT18oBK971Yi2c --amount 10 --token EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v
+
+# Send BONK tokens
+paw send trading-bot-001 --to <address> --amount 1000000 --token DezXAZ8z7PnrnRJjz3wXBoRgixCa6xjnB7YaB1pPB263
+
 # Send on specific network
 paw send trading-bot-001 --to <address> --amount 0.5 --network mainnet-beta
 ```
 
-**Output:**
+**Output (SOL):**
 ```
 📟 PAW - Send Transaction
 Agent ID: trading-bot-001
@@ -285,6 +292,32 @@ Signing transaction...
 Signature: 2TciCeoAuNxkgvWNzN5AHERuhHfQn6E5vbrpro8mnKaT...
 Explorer:  https://explorer.solana.com/tx/2TciCeoAuNxkgvWNzN5A...?cluster=devnet
 ```
+
+**Output (SPL Token):**
+```
+📟 PAW - Send Transaction
+Agent ID: trading-bot-001
+To:       DJcVfT6dienfSbudJzZ82WN4EkVPgVaT18oBK971Yi2c
+Amount:   10 tokens
+Token:    EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v
+Network:  mainnet-beta
+
+Preparing SPL token transfer...
+Token decimals: 6
+Getting token accounts...
+
+Signing transaction...
+
+✅ Transaction sent!
+Signature: 3KjH9F...
+Explorer:  https://explorer.solana.com/tx/3KjH9F...?cluster=mainnet-beta
+```
+
+**Notes:**
+- For SOL: omit `--token` flag
+- For SPL tokens: provide mint address with `--token` flag
+- Token accounts are created automatically if needed
+- Amount respects token decimals (e.g., USDC has 6 decimals)
 
 ---
 

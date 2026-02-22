@@ -33,10 +33,20 @@ PAW - New Features List
    - Useful for: Airdrops, batch payments, team payouts
    - Note: Currently supports SOL only (not SPL tokens)
 
+5. SPL Token Send Support ✅
+   - Send command now supports both SOL and SPL tokens
+   - Command: paw send <agent-id> --to <address> --amount <amount> --token <mint-address>
+   - Automatically handles token accounts (creates if needed)
+   - Respects token decimals (USDC has 6, BONK has 5, etc.)
+   - Examples:
+     * Send SOL: paw send agent --to <addr> --amount 0.1
+     * Send USDC: paw send agent --to <addr> --amount 10 --token EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v
+   - Useful for: Token payments, moving tokens between wallets
+
 Status: ✅ All features completed!
-Priority: High (all 4 features are essential)
+Priority: High (all 5 features are essential)
 
 Future Enhancements:
 - Add transaction size limit check for multi-send (max ~15-20 recipients)
-- Support SPL token multi-send (not just SOL)
+- Support SPL token multi-send (batch token payments)
 - CSV file import for multi-send recipients 

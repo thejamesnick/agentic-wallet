@@ -10,13 +10,19 @@ import {
   LAMPORTS_PER_SOL,
   Cluster,
 } from '@solana/web3.js';
+import {
+  getOrCreateAssociatedTokenAccount,
+  createTransferInstruction,
+  getMint,
+} from '@solana/spl-token';
 
 export const sendCommand = new Command('send')
-  .description('📟 Send SOL to another address')
+  .description('📟 Send SOL or SPL tokens to another address')
   .argument('[agent-id]', 'Agent identifier')
   .option('--agent-id <id>', 'Agent identifier (alternative)')
   .requiredOption('--to <address>', 'Recipient address')
-  .requiredOption('--amount <amount>', 'Amount in SOL')
+  .requiredOption('--amount <amount>', 'Amount to send')
+  .option('--token <mint>', 'SPL token mint address (omit for SOL)')
   .option('--network <network>', 'Network to use (overrides config)')
   .action(async (agentIdArg, options) => {
     try {
@@ -38,10 +44,15 @@ export const sendCommand = new Command('send')
         network = config.network || 'mainnet-beta';
       }
 
+      const isSPLToken = !!options.token;
+
       console.log('\n📟 PAW - Send Transaction');
       console.log('Agent ID:', agentId);
       console.log('To:      ', options.to);
-      console.log('Amount:  ', options.amount, 'SOL');
+      console.log('Amount:  ', options.amount, isSPLToken ? 'tokens' : 'SOL');
+      if (isSPLToken) {
+        console.log('Token:   ', options.token);
+      }
       console.log('Network: ', network);
 
       // Load keypair
@@ -50,16 +61,58 @@ export const sendCommand = new Command('send')
       // Get connection
       const connection = SolanaClient.getConnection(network as Cluster);
 
-      // Create transfer instruction
-      const lamports = Math.floor(parseFloat(options.amount) * LAMPORTS_PER_SOL);
-      const transferInstruction = SystemProgram.transfer({
-        fromPubkey: keypair.publicKey,
-        toPubkey: new PublicKey(options.to),
-        lamports,
-      });
+      let transaction: Transaction;
 
-      // Create transaction
-      const transaction = new Transaction().add(transferInstruction);
+      if (isSPLToken) {
+        // SPL Token Transfer
+        console.log('\nPreparing SPL token transfer...');
+        
+        const mintPubkey = new PublicKey(options.token);
+        const recipientPubkey = new PublicKey(options.to);
+
+        // Get mint info to determine decimals
+        const mintInfo = await getMint(connection, mintPubkey);
+        const decimals = mintInfo.decimals;
+        const amount = Math.floor(parseFloat(options.amount) * Math.pow(10, decimals));
+
+        console.log('Token decimals:', decimals);
+
+        // Get or create associated token accounts
+        console.log('Getting token accounts...');
+        const sourceAccount = await getOrCreateAssociatedTokenAccount(
+          connection,
+          keypair,
+          mintPubkey,
+          keypair.publicKey
+        );
+
+        const destinationAccount = await getOrCreateAssociatedTokenAccount(
+          connection,
+          keypair,
+          mintPubkey,
+          recipientPubkey
+        );
+
+        // Create transfer instruction
+        const transferInstruction = createTransferInstruction(
+          sourceAccount.address,
+          destinationAccount.address,
+          keypair.publicKey,
+          amount
+        );
+
+        transaction = new Transaction().add(transferInstruction);
+      } else {
+        // SOL Transfer
+        const lamports = Math.floor(parseFloat(options.amount) * LAMPORTS_PER_SOL);
+        const transferInstruction = SystemProgram.transfer({
+          fromPubkey: keypair.publicKey,
+          toPubkey: new PublicKey(options.to),
+          lamports,
+        });
+
+        transaction = new Transaction().add(transferInstruction);
+      }
 
       // Sign and send
       console.log('\nSigning transaction...');

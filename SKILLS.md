@@ -49,6 +49,9 @@ paw tokens <agent-id>
 # Send SOL
 paw send <agent-id> --to <address> --amount <sol-amount>
 
+# Send SPL tokens
+paw send <agent-id> --to <address> --amount <token-amount> --token <mint-address>
+
 # Send SOL to multiple addresses (batch payment)
 paw multi-send <agent-id> --addresses <addr1>,<addr2> --amounts <amount1>,<amount2>
 
@@ -93,6 +96,9 @@ paw swap trading-bot-001 --from SOL --to USDC --amount 0.1 --network mainnet-bet
 ```bash
 # Send 0.5 SOL to another agent
 paw send agent-alice --to DJcVfT6dienfSbudJzZ82WN4EkVPgVaT18oBK971Yi2c --amount 0.5
+
+# Send SPL tokens (e.g., USDC)
+paw send agent-alice --to DJcVfT6dienfSbudJzZ82WN4EkVPgVaT18oBK971Yi2c --amount 10 --token EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v
 
 # Or send to another agent by ID (if you know their address)
 paw send agent-alice --to <address> --amount 0.5
