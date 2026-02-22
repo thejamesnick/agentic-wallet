@@ -1,12 +1,12 @@
 PAW - New Features List
 
-1. Address with QR Code
+1. Address with QR Code ✅
    - Display wallet address as a scannable QR code in terminal
    - Makes it easy to receive funds from mobile wallets
    - Command: paw address <agent-id> --qr
    - Useful for: Quick funding, mobile wallet transfers
 
-2. Export Seed Phrase & Private Key
+2. Export Seed Phrase & Private Key 
    - Export wallet seed phrase (12/24 words) for backup
    - Export raw private key for importing to other wallets
    - Command: paw export <agent-id> --seed or --private-key

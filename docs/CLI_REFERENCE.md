@@ -106,6 +106,65 @@ Address:  HWd4qkpz5r7c9zSFSUGy2MkkvwuvFd3tqiMkCLiMyb4D
 
 ---
 
+### `export` - Export Private Key
+
+Export wallet private key for backup or importing to other wallets.
+
+**Syntax:**
+```bash
+paw export <agent-id> [options]
+```
+
+**Options:**
+- `--confirm <agent-id>` - Skip interactive confirmation (for automation)
+
+**Examples:**
+```bash
+# For humans - Interactive export (requires typing agent ID to confirm)
+paw export trading-bot-001
+# You'll be prompted: Type 'trading-bot-001' to confirm export: _
+
+# For AI agents - Automated export (skips confirmation prompt)
+paw export trading-bot-001 --confirm trading-bot-001
+# Exports immediately without prompting
+```
+
+**Output:**
+```
+⚠️  WARNING: SENSITIVE DATA EXPORT
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+This will display your wallet private key in PLAINTEXT!
+Anyone with this information can STEAL YOUR FUNDS!
+Only export in a secure, private location.
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+📟 PAW - Wallet Export
+Agent ID: trading-bot-001
+
+🔑 Private Key (Base58):
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+[private key displayed here]
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+⚠️  Keep this secret and secure!
+⚠️  Never share it with anyone!
+💡 Import this into Phantom, Solflare, or any Solana wallet
+```
+
+**Use Cases:**
+- Backup wallet before system changes
+- Import wallet into Phantom or Solflare
+- Migrate wallet to another machine
+- Share wallet access with team (use with caution!)
+
+**Security Notes:**
+- Private key grants full access to wallet funds
+- Store securely offline (paper backup, password manager)
+- Never share via email, chat, or screenshots
+- Use `--confirm` flag only in secure automated scripts
+
+---
+
 ### `balance` - Check Balance
 
 Check total portfolio balance (SOL + SPL tokens) in both SOL and USD.

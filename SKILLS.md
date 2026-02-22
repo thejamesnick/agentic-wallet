@@ -31,6 +31,12 @@ paw address <agent-id>
 # Get address with QR code (for mobile wallet scanning)
 paw address <agent-id> --qr
 
+# Export private key (for backup or importing to other wallets)
+# For humans - interactive (requires typing agent ID to confirm)
+paw export <agent-id>
+# For AI agents - automated (skips confirmation)
+paw export <agent-id> --confirm <agent-id>
+
 # Check total portfolio (SOL + tokens in USD)
 paw balance <agent-id>
 

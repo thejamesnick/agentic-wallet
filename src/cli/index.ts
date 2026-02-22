@@ -10,6 +10,7 @@ import { historyCommand } from './commands/history';
 import { configCommand } from './commands/config';
 import { tokensCommand } from './commands/tokens';
 import { dashboardCommand } from './commands/dashboard';
+import { exportCommand } from './commands/export';
 
 const program = new Command();
 
@@ -28,6 +29,7 @@ program.addCommand(tokensCommand);
 program.addCommand(sendCommand);
 program.addCommand(swapCommand);
 program.addCommand(historyCommand);
+program.addCommand(exportCommand);
 
 // Parse arguments
 program.parse();
