@@ -613,53 +613,74 @@ PAW is the **first wallet infrastructure designed specifically for AI agents** o
 ### Installation
 
 ```bash
-git clone https://github.com/thejamesnick/agentic-wallet.git
-cd agentic-wallet
-yarn install
-yarn build
+# Install globally from npm
+npm install -g @pocketagent/paw
+
+# Or use directly with npx
+npx @pocketagent/paw init my-agent
 ```
 
 ### Quick Start
 
 ```bash
-# Create wallet
-node dist/cli/index.js init my-agent
+# Create wallet (defaults to mainnet-beta)
+paw init my-agent
 
 # Get address
-node dist/cli/index.js address my-agent
+paw address my-agent
 
 # Check balance
-node dist/cli/index.js balance my-agent
+paw balance my-agent
 
 # Execute swap
-node dist/cli/index.js swap my-agent --from SOL --to USDC --amount 0.5
+paw swap my-agent --from SOL --to USDC --amount 0.5
+```
+
+### AI Agent Skills
+
+```bash
+# Install PAW skills for AI agents
+npx skills add thejamesnick/paw-skills
 ```
 
 ### Documentation
 
+- **npm Package**: https://www.npmjs.com/package/@pocketagent/paw
+- **GitHub (Main)**: https://github.com/thejamesnick/agentic-wallet
+- **GitHub (Skills)**: https://github.com/thejamesnick/paw-skills
 - **README**: Project overview
 - **SKILLS.md**: For AI agents
-- **DEEP_DIVE.md**: Technical details
-- **SECURITY.md**: Security model
-- **PERFORMANCE.md**: Benchmarks
 - **CLI_REFERENCE.md**: Command reference
 
 ---
 
-## 16. Contact & Links
+## 16. Links & Resources
 
-- **GitHub**: https://github.com/thejamesnick/agentic-wallet
-- **Documentation**: See `/docs` folder
-- **Examples**: See `/examples` folder
-- **Bounty**: Superteam DeFi Developer Challenge
+### Official Links
+- **npm Package**: https://www.npmjs.com/package/@pocketagent/paw
+- **GitHub (Wallet)**: https://github.com/thejamesnick/agentic-wallet
+- **GitHub (Skills)**: https://github.com/thejamesnick/paw-skills
+- **AI Skills Registry**: https://skills.sh (search for "pocketagent-wallet")
+
+### Installation
+```bash
+# Install wallet
+npm install -g @pocketagent/paw
+
+# Install AI agent skills
+npx skills add thejamesnick/paw-skills
+```
+
+### Documentation
+- Full documentation in `/docs` folder
+- Examples in `/examples` folder
+- Skills for AI agents: `skills/pocketagent-wallet/SKILL.md`
 
 ---
 
 **PAW: Empowering AI agents, one paw at a time** 📟
 
-*Built for the Superteam DeFi Developer Challenge 2026*
-
-**Target**: 🥇 $2,000 USDC First Prize
+*Published on npm • Open source • Production ready*
 
 ---
 
@@ -667,4 +688,6 @@ node dist/cli/index.js swap my-agent --from SOL --to USDC --amount 0.5
 **Word Count**: ~2,500 words  
 **Reading Time**: ~15 minutes  
 **Technical Level**: Intermediate to Advanced
+
+**Status**: ✅ Live on npm • ✅ Open source • ✅ Production ready
 
