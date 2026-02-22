@@ -12,6 +12,7 @@ import { tokensCommand } from './commands/tokens';
 import { dashboardCommand } from './commands/dashboard';
 import { exportCommand } from './commands/export';
 import { importCommand } from './commands/import';
+import { multiSendCommand } from './commands/multi-send';
 
 const program = new Command();
 
@@ -29,6 +30,7 @@ program.addCommand(addressCommand);
 program.addCommand(balanceCommand);
 program.addCommand(tokensCommand);
 program.addCommand(sendCommand);
+program.addCommand(multiSendCommand);
 program.addCommand(swapCommand);
 program.addCommand(historyCommand);
 program.addCommand(exportCommand);

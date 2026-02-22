@@ -288,6 +288,74 @@ Explorer:  https://explorer.solana.com/tx/2TciCeoAuNxkgvWNzN5A...?cluster=devnet
 
 ---
 
+### `multi-send` - Send to Multiple Addresses
+
+Send SOL to multiple addresses in a single transaction.
+
+**Syntax:**
+```bash
+paw multi-send <agent-id> --addresses <addr1>,<addr2>,... --amounts <amt1>,<amt2>,... [options]
+```
+
+**Options:**
+- `--addresses <addresses>` - Comma-separated list of recipient addresses (required)
+- `--amounts <amounts>` - Comma-separated list of amounts in SOL (required)
+- `--network <network>` - Network to use (devnet, mainnet-beta, testnet) [default: mainnet-beta]
+
+**Examples:**
+```bash
+# Send to 2 recipients
+paw multi-send agent-alice \
+  --addresses DJcVfT6dienfSbudJzZ82WN4EkVPgVaT18oBK971Yi2c,32FiUrjyfETyz5vktLRpAQW3C95WKJJSdK8TepCGuFCJ \
+  --amounts 0.5,0.5
+
+# Send different amounts to 3 recipients
+paw multi-send trading-bot \
+  --addresses addr1,addr2,addr3 \
+  --amounts 0.1,0.2,0.3 \
+  --network mainnet-beta
+```
+
+**Output:**
+```
+📟 PAW - Multi-Send
+Agent ID: agent-alice
+Network:  devnet
+
+📋 Transfer Summary:
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+1. DJcVfT6dienfSbudJzZ82WN4EkVPgVaT18oBK971Yi2c
+   Amount: 0.5 SOL
+2. 32FiUrjyfETyz5vktLRpAQW3C95WKJJSdK8TepCGuFCJ
+   Amount: 0.5 SOL
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Total: 1 SOL (2 recipients)
+
+💰 Balance:  2.559985 SOL
+💸 Estimated fees: ~ 0.000015 SOL
+
+📤 Sending transactions...
+⏳ Confirming...
+
+✅ Multi-send completed!
+Signature: 4P7M2VmpGvFAThNxrvw2NXJu1CEwppAPCRG4vkQT5ZM3...
+Explorer:  https://explorer.solana.com/tx/4P7M2VmpGvFAThNxrvw2...
+```
+
+**Use Cases:**
+- Airdrops to multiple wallets
+- Team salary payments
+- Batch refunds
+- Distributing rewards to multiple agents
+
+**Notes:**
+- All transfers happen in a single transaction (saves fees)
+- Number of addresses must match number of amounts
+- Currently supports SOL only (not SPL tokens)
+- Transaction fails if any address is invalid
+
+---
+
 ### `history` - Transaction History
 
 View transaction history for an agent's wallet.

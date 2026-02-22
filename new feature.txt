@@ -25,12 +25,18 @@ PAW - New Features List
    - Useful for: Migrating existing wallets, using Phantom/Solflare wallets with PAW
    - Note: Only private key import supported (not seed phrases)
 
-4. Multi-Send
-   - Send SOL/tokens to multiple addresses in one command
-   - Saves time and transaction fees
+4. Multi-Send ✅
+   - Send SOL to multiple addresses in one command
+   - Saves time and transaction fees (all in single transaction)
    - Command: paw multi-send <agent-id> --addresses addr1,addr2,addr3 --amounts 0.1,0.2,0.3
-   - Or use CSV file: paw multi-send <agent-id> --file recipients.csv
+   - Example: paw multi-send agent-alice --addresses Bob,Charlie --amounts 0.5,0.5
    - Useful for: Airdrops, batch payments, team payouts
+   - Note: Currently supports SOL only (not SPL tokens)
 
-Status: Planning phase
-Priority: High (all 4 features are essential) 
+Status: ✅ All features completed!
+Priority: High (all 4 features are essential)
+
+Future Enhancements:
+- Add transaction size limit check for multi-send (max ~15-20 recipients)
+- Support SPL token multi-send (not just SOL)
+- CSV file import for multi-send recipients 

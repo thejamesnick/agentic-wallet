@@ -65,6 +65,9 @@ We're launching on Solana because:
 - **Total Portfolio View**: See combined value of SOL + tokens in USD
 - **Multi-Token Support**: Trade any SPL token by mint address
 - **Transaction History**: Track all agent activities
+- **QR Code Display**: Generate QR codes for easy mobile funding
+- **Wallet Import/Export**: Backup and migrate wallets easily
+- **Multi-Send**: Send to multiple addresses in one transaction
 
 ### 🎯 Meme Trading Ready
 - **Configurable Slippage**: Set high slippage for volatile tokens

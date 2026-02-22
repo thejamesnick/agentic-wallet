@@ -49,6 +49,9 @@ paw tokens <agent-id>
 # Send SOL
 paw send <agent-id> --to <address> --amount <sol-amount>
 
+# Send SOL to multiple addresses (batch payment)
+paw multi-send <agent-id> --addresses <addr1>,<addr2> --amounts <amount1>,<amount2>
+
 # Swap tokens (Jupiter DEX)
 paw swap <agent-id> --from <token> --to <token> --amount <amount>
 
