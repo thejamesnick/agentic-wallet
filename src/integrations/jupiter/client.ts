@@ -23,6 +23,7 @@ interface SwapRequest {
 export class JupiterClient {
   private static readonly API_BASE = 'https://lite-api.jup.ag/ultra/v1';
   private static readonly TOKEN_API = 'https://lite-api.jup.ag/tokens/v2';
+  private static readonly PRICE_API = 'https://api.jup.ag/price/v2';
   private static tokenListCache: Map<string, any> | null = null;
 
   /**
@@ -209,4 +210,47 @@ export class JupiterClient {
     USDT: 'Es9vMFrzaCERmJfrF4H2FYD4KCoNkY11McCe8BenwNYB',
     BONK: 'DezXAZ8z7PnrnRJjz3wXBoRgixCa6xjnB7YaB1pPB263',
   };
+
+  /**
+   * Get token price in USDC
+   * @param mints Comma separated list of mint addresses
+   */
+  static async getTokenPrices(mints: string[]): Promise<Record<string, number>> {
+    try {
+      if (mints.length === 0) return {};
+
+      // Limit to 100 mints per request
+      const chunks = [];
+      for (let i = 0; i < mints.length; i += 100) {
+        chunks.push(mints.slice(i, i + 100));
+      }
+
+      const prices: Record<string, number> = {};
+
+      for (const chunk of chunks) {
+        const ids = chunk.join(',');
+        const response = await fetch(`${JupiterClient.PRICE_API}?ids=${ids}`);
+
+        if (!response.ok) {
+          console.warn(`Jupiter Price API error: ${response.statusText}`);
+          continue;
+        }
+
+        const data = (await response.json()) as any;
+        if (data && data.data) {
+          Object.keys(data.data).forEach(mint => {
+             // Convert string price to number
+             if (data.data[mint] && data.data[mint].price) {
+               prices[mint] = parseFloat(data.data[mint].price);
+             }
+          });
+        }
+      }
+
+      return prices;
+    } catch (error) {
+      console.error('Failed to fetch token prices:', error);
+      return {};
+    }
+  }
 }

@@ -4,6 +4,7 @@ import { SolanaClient } from '../../utils/solana';
 import { FileSystemStorage } from '../../core/storage/filesystem';
 import { PublicKey, Cluster } from '@solana/web3.js';
 import { PriceService } from '../../utils/price';
+import { JupiterClient } from '../../integrations/jupiter/client';
 
 export const balanceCommand = new Command('balance')
   .description('📟 Check wallet balance')
@@ -45,29 +46,40 @@ export const balanceCommand = new Command('balance')
         { programId: new PublicKey('TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA') }
       );
 
-      // Calculate total value in USD
-      const SOL_PRICE = await PriceService.getSolPrice();
-      let totalUSD = solBalance * SOL_PRICE;
-      
-      // Track stablecoin balances
-      let stablecoinBalance = 0;
+      // Collect all mints with positive balance
+      const mints: string[] = [];
+      const tokenBalances: Record<string, number> = {};
 
-      // Add SPL token values
       for (const accountInfo of tokenAccounts.value) {
         const parsedInfo = accountInfo.account.data.parsed.info;
         const mint = parsedInfo.mint;
         const tokenBalance = parsedInfo.tokenAmount.uiAmount || 0;
-        
-        // Known stablecoins = $1 each
-        const stablecoins = [
-          'EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v', // USDC
-          'Es9vMFrzaCERmJfrF4H2FYD4KCoNkY11McCe8BenwNYB', // USDT
-        ];
-        
-        if (stablecoins.includes(mint)) {
-          stablecoinBalance += tokenBalance;
-          totalUSD += tokenBalance;
+
+        if (tokenBalance > 0) {
+          mints.push(mint);
+          tokenBalances[mint] = tokenBalance;
         }
+      }
+
+      // Calculate total value in USD
+      const SOL_PRICE = await PriceService.getSolPrice();
+      let totalUSD = solBalance * SOL_PRICE;
+      
+      // Fetch prices for all tokens
+      let tokenPrices: Record<string, number> = {};
+      if (mints.length > 0) {
+        // console.log('Fetching token prices...');
+        tokenPrices = await JupiterClient.getTokenPrices(mints);
+      }
+
+      // Add SPL token values
+      for (const mint of mints) {
+        // Use price from Jupiter, or 0 if not found
+        // For stablecoins (USDC/USDT), Jupiter returns ~1.00
+        const price = tokenPrices[mint] || 0;
+        const balance = tokenBalances[mint];
+        
+        totalUSD += balance * price;
       }
 
       const totalSOL = totalUSD / SOL_PRICE;
