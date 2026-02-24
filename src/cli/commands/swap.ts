@@ -46,8 +46,12 @@ export const swapCommand = new Command('swap')
       if (options.from === 'SOL') {
         amount = Math.floor(parseFloat(options.amount) * LAMPORTS_PER_SOL);
       } else {
-        // For other tokens, assume 6 decimals (USDC/USDT standard)
-        amount = Math.floor(parseFloat(options.amount) * 1e6);
+        // Fetch the actual decimals from the token API
+        const inputTokenInfo = await JupiterClient.findToken(options.from);
+        const decimals = inputTokenInfo ? inputTokenInfo.decimals : 6;
+
+        // Multiply by the correct decimal precision
+        amount = Math.floor(parseFloat(options.amount) * Math.pow(10, decimals));
       }
 
       console.log('\nFetching quote from Jupiter...');

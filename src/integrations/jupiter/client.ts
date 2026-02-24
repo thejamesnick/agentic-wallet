@@ -153,6 +153,10 @@ export class JupiterClient {
     orderResponse: any,
     keypair: any
   ): Promise<{ signature: string; status: string }> {
+    if (!orderResponse.transaction || orderResponse.transaction === "") {
+      throw new Error("Jupiter failed to build the transaction. Check if you have sufficient balance and the correct token decimals.");
+    }
+
     // Deserialize and sign transaction
     const transactionBuf = Buffer.from(orderResponse.transaction, 'base64');
     const transaction = VersionedTransaction.deserialize(transactionBuf);
