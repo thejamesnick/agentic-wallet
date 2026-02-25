@@ -57,6 +57,7 @@ paw multi-send <agent-id> --addresses <addr1>,<addr2> --amounts <amount1>,<amoun
 
 # Swap tokens (Jupiter DEX)
 paw swap <agent-id> --from <token> --to <token> --amount <amount>
+# Amount can be exact (0.5) or percentage (50%)
 
 # View transaction history
 paw history <agent-id>
@@ -85,8 +86,14 @@ paw balance trading-bot-001
 ### Example 2: Fast Token Swap
 
 ```bash
-# Swap 0.1 SOL to USDC on mainnet
+# Swap exact amount: 0.1 SOL to USDC
 paw swap trading-bot-001 --from SOL --to USDC --amount 0.1 --network mainnet-beta
+
+# Swap percentage: 50% of SOL to USDC
+paw swap trading-bot-001 --from SOL --to USDC --amount 50% --network mainnet-beta
+
+# Swap 100% (exit position)
+paw swap trading-bot-001 --from BONK --to USDC --amount 100% --network mainnet-beta
 
 # Executes in <2 seconds using Jupiter aggregator
 ```
@@ -280,8 +287,11 @@ PAW is built for fast, autonomous meme coin trading:
 # Buy meme coin with custom slippage
 paw swap bot --from SOL --to <MEME_MINT> --amount 0.5 --slippage 1000
 
-# Sell meme coin fast with priority fee
-paw swap bot --from <MEME_MINT> --to SOL --amount 1000000 --slippage 1000 --priority-fee 100000
+# Sell 100% of meme coin (exit position)
+paw swap bot --from <MEME_MINT> --to SOL --amount 100% --slippage 1000 --priority-fee 100000
+
+# Take 50% profit (sell half)
+paw swap bot --from <MEME_MINT> --to USDC --amount 50% --slippage 1000
 
 # Trade popular meme coins by symbol
 paw swap bot --from SOL --to BONK --amount 0.5 --slippage 500

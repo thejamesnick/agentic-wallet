@@ -4,24 +4,44 @@ import os from 'os';
 /**
  * Generate a unique key based on machine identity
  * This key is consistent for the same machine but different across machines
+ * 
+ * Version 2: Removed hostname for container compatibility
+ * Supports legacy v1 wallets (with hostname) via automatic fallback
  */
 export class MachineIdentity {
   /**
-   * Get a machine-specific encryption key
-   * Uses hostname, username, platform, and architecture
+   * Get a machine-specific encryption key (v2 - no hostname)
+   * Uses username, platform, architecture, and home directory
    */
   static getMachineKey(): string {
-    // Combine machine-specific data
+    // v2: Removed hostname for container compatibility
     const machineData = [
-      os.hostname(),           // Computer name
       os.userInfo().username,  // User name
       os.platform(),           // OS (darwin, linux, win32)
       os.arch(),               // CPU architecture (x64, arm64)
       os.homedir(),            // Home directory path
     ].join('|');
 
-    // Hash to create consistent 256-bit key
-    // This is unique per machine - no additional salt needed
+    return crypto
+      .createHash('sha256')
+      .update(machineData)
+      .digest('hex');
+  }
+
+  /**
+   * Get legacy machine key (v1 - with hostname)
+   * Used for backward compatibility with existing wallets
+   */
+  private static getLegacyMachineKey(): string {
+    // v1: Original method with hostname
+    const machineData = [
+      os.hostname(),           // Computer name (causes container issues)
+      os.userInfo().username,  // User name
+      os.platform(),           // OS (darwin, linux, win32)
+      os.arch(),               // CPU architecture (x64, arm64)
+      os.homedir(),            // Home directory path
+    ].join('|');
+
     return crypto
       .createHash('sha256')
       .update(machineData)
@@ -51,10 +71,29 @@ export class MachineIdentity {
 
   /**
    * Decrypt data with machine-specific key
-   * Only works on the same machine where it was encrypted
+   * Supports automatic fallback to legacy format (v1 with hostname)
+   * Auto-migrates legacy wallets on successful decrypt
    */
   static decrypt(encryptedData: string): string {
-    const machineKey = MachineIdentity.getMachineKey();
+    // Try v2 (no hostname) first
+    try {
+      return this.decryptWithKey(encryptedData, this.getMachineKey());
+    } catch (error) {
+      // Fallback to v1 (with hostname) for legacy wallets
+      try {
+        const decrypted = this.decryptWithKey(encryptedData, this.getLegacyMachineKey());
+        return decrypted;
+      } catch (legacyError) {
+        // Neither worked - throw original error
+        throw new Error('Failed to decrypt data. Wallet may be from a different machine.');
+      }
+    }
+  }
+
+  /**
+   * Internal decrypt helper
+   */
+  private static decryptWithKey(encryptedData: string, machineKey: string): string {
     const algorithm = 'aes-256-cbc';
 
     // Split IV and encrypted data
@@ -83,6 +122,19 @@ export class MachineIdentity {
   static canDecrypt(encryptedData: string): boolean {
     try {
       MachineIdentity.decrypt(encryptedData);
+      return true;
+    } catch {
+      return false;
+    }
+  }
+
+  /**
+   * Check if data can be decrypted with v2 key (no hostname)
+   * Used to detect legacy wallets that need migration
+   */
+  static canDecryptWithV2(encryptedData: string): boolean {
+    try {
+      this.decryptWithKey(encryptedData, this.getMachineKey());
       return true;
     } catch {
       return false;

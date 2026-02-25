@@ -9,7 +9,7 @@ export const swapCommand = new Command('swap')
   .requiredOption('--agent-id <id>', 'Agent identifier')
   .requiredOption('--from <token>', 'Input token (SOL, USDC, USDT, BONK or mint address)')
   .requiredOption('--to <token>', 'Output token (SOL, USDC, USDT, BONK or mint address)')
-  .requiredOption('--amount <amount>', 'Amount to swap')
+  .requiredOption('--amount <amount>', 'Amount to swap (e.g., 0.5 or 50%)')
   .option('--network <network>', 'Network to use (devnet, mainnet-beta)', 'mainnet-beta')
   .option('--slippage <bps>', 'Slippage tolerance in basis points (default: 50, meme coins: 500-1000)', '50')
   .option('--priority-fee <lamports>', 'Priority fee in lamports for faster execution (default: auto)')
@@ -41,23 +41,69 @@ export const swapCommand = new Command('swap')
       const inputMint = JupiterClient.TOKENS[options.from as keyof typeof JupiterClient.TOKENS] || options.from;
       const outputMint = JupiterClient.TOKENS[options.to as keyof typeof JupiterClient.TOKENS] || options.to;
 
-      // Convert amount to smallest unit
-      let amount: number;
-      if (options.from === 'SOL') {
-        amount = Math.floor(parseFloat(options.amount) * LAMPORTS_PER_SOL);
-      } else {
-        // Fetch the actual decimals from the token API
-        const inputTokenInfo = await JupiterClient.findToken(options.from);
-        const decimals = inputTokenInfo ? inputTokenInfo.decimals : 6;
+      // Load keypair to get wallet address
+      const keypair = await WalletManager.loadKeypairAuto(options.agentId);
+      const connection = SolanaClient.getConnection(options.network as Cluster);
 
-        // Multiply by the correct decimal precision
-        amount = Math.floor(parseFloat(options.amount) * Math.pow(10, decimals));
+      // Check if amount is percentage
+      const isPercentage = options.amount.toString().endsWith('%');
+      let actualAmount: string;
+      let amountInSmallestUnit: number;
+
+      if (isPercentage) {
+        // Get percentage value
+        const percentage = parseFloat(options.amount.replace('%', ''));
+        
+        if (percentage <= 0 || percentage > 100) {
+          throw new Error('Percentage must be between 0 and 100');
+        }
+
+        console.log(`\n💰 Calculating ${percentage}% of ${options.from} balance...`);
+
+        // Get balance
+        let balance: number;
+        if (options.from === 'SOL') {
+          const lamports = await connection.getBalance(keypair.publicKey);
+          balance = lamports / LAMPORTS_PER_SOL;
+          actualAmount = ((balance * percentage) / 100).toFixed(6);
+          amountInSmallestUnit = Math.floor(parseFloat(actualAmount) * LAMPORTS_PER_SOL);
+        } else {
+          // Get SPL token balance
+          const { getAccount, getAssociatedTokenAddress } = await import('@solana/spl-token');
+          const { PublicKey } = await import('@solana/web3.js');
+          
+          const mintPubkey = new PublicKey(inputMint);
+          const tokenAccount = await getAssociatedTokenAddress(mintPubkey, keypair.publicKey);
+          
+          try {
+            const accountInfo = await getAccount(connection, tokenAccount);
+            const inputTokenInfo = await JupiterClient.findToken(options.from);
+            const decimals = inputTokenInfo ? inputTokenInfo.decimals : 6;
+            
+            balance = Number(accountInfo.amount) / Math.pow(10, decimals);
+            actualAmount = ((balance * percentage) / 100).toFixed(decimals);
+            amountInSmallestUnit = Math.floor(parseFloat(actualAmount) * Math.pow(10, decimals));
+          } catch (error) {
+            throw new Error(`No ${options.from} balance found`);
+          }
+        }
+
+        console.log(`   Balance: ${balance.toFixed(6)} ${options.from}`);
+        console.log(`   Swapping: ${actualAmount} ${options.from} (${percentage}%)`);
+      } else {
+        // Use exact amount
+        actualAmount = options.amount;
+        
+        if (options.from === 'SOL') {
+          amountInSmallestUnit = Math.floor(parseFloat(actualAmount) * LAMPORTS_PER_SOL);
+        } else {
+          const inputTokenInfo = await JupiterClient.findToken(options.from);
+          const decimals = inputTokenInfo ? inputTokenInfo.decimals : 6;
+          amountInSmallestUnit = Math.floor(parseFloat(actualAmount) * Math.pow(10, decimals));
+        }
       }
 
       console.log('\nFetching quote from Jupiter...');
-      
-      // Load keypair first to get public key
-      const keypair = await WalletManager.loadKeypairAuto(options.agentId);
       
       // Load referral config if available
       const referralConfig = JupiterClient.loadReferralConfig();
@@ -65,7 +111,7 @@ export const swapCommand = new Command('swap')
       const quote = await JupiterClient.getQuote(
         inputMint,
         outputMint,
-        amount,
+        amountInSmallestUnit,
         parseInt(slippage.toString()),
         {
           userPublicKey: keypair.publicKey.toBase58(),
@@ -80,7 +126,7 @@ export const swapCommand = new Command('swap')
         : (parseInt(quote.outAmount) / 1e6).toFixed(6);
 
       console.log('\n📊 Quote:');
-      console.log('Input:  ', options.amount, options.from);
+      console.log('Input:  ', actualAmount, options.from);
       console.log('Output: ', outAmount, options.to);
       console.log('Price Impact:', quote.priceImpactPct, '%');
       console.log('Slippage:', slippage, 'bps', `(${(parseInt(slippage.toString()) / 100).toFixed(1)}%)`);
