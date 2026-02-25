@@ -124,7 +124,7 @@ export const sendCommand = new Command('send')
 
       console.log('\n✅ Transaction sent!');
       console.log('Signature:', signature);
-      console.log('Explorer:  https://explorer.solana.com/tx/' + signature + '?cluster=' + network);
+      console.log('Explorer: ', SolanaClient.getExplorerUrl('tx', signature, network as Cluster));
       console.log('');
     } catch (error) {
       console.error('\n❌ Error:', (error as Error).message);

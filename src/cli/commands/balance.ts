@@ -68,17 +68,25 @@ export const balanceCommand = new Command('balance')
       // Fetch prices for all tokens
       let tokenPrices: Record<string, number> = {};
       if (mints.length > 0) {
-        // console.log('Fetching token prices...');
         tokenPrices = await JupiterClient.getTokenPrices(mints);
       }
 
       // Add SPL token values
       for (const mint of mints) {
-        // Use price from Jupiter, or 0 if not found
-        // For stablecoins (USDC/USDT), Jupiter returns ~1.00
-        const price = tokenPrices[mint] || 0;
-        const balance = tokenBalances[mint];
+        // Use price from DexScreener, or fallback for known stablecoins
+        let price = tokenPrices[mint] || 0;
         
+        // Fallback: Known stablecoins are always $1
+        const stablecoins = [
+          'EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v', // USDC
+          'Es9vMFrzaCERmJfrF4H2FYD4KCoNkY11McCe8BenwNYB', // USDT
+        ];
+        
+        if (stablecoins.includes(mint) && price === 0) {
+          price = 1.0;
+        }
+        
+        const balance = tokenBalances[mint];
         totalUSD += balance * price;
       }
 

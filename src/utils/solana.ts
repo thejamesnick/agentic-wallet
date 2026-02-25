@@ -55,4 +55,30 @@ export class SolanaClient {
     const balance = await connection.getBalance(publicKey);
     return balance / 1e9; // Convert lamports to SOL
   }
+
+  /**
+   * Get explorer URL for transaction or address
+   * Uses Solscan for mainnet, Solana Explorer for devnet/testnet
+   */
+  static getExplorerUrl(
+    type: 'tx' | 'address',
+    value: string,
+    network: Cluster = 'mainnet-beta'
+  ): string {
+    if (network === 'mainnet-beta') {
+      // Use Solscan for mainnet
+      if (type === 'tx') {
+        return `https://solscan.io/tx/${value}`;
+      } else {
+        return `https://solscan.io/address/${value}`;
+      }
+    } else {
+      // Use Solana Explorer for devnet/testnet
+      if (type === 'tx') {
+        return `https://explorer.solana.com/tx/${value}?cluster=${network}`;
+      } else {
+        return `https://explorer.solana.com/address/${value}?cluster=${network}`;
+      }
+    }
+  }
 }

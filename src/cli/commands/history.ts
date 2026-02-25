@@ -104,7 +104,7 @@ export const historyCommand = new Command('history')
 
       console.log(table.toString());
       console.log('');
-      console.log(`View full details: https://explorer.solana.com/address/${walletInfo.address}?cluster=${network}`);
+      console.log(`View full details: ${SolanaClient.getExplorerUrl('address', walletInfo.address, network as Cluster)}`);
       console.log('');
     } catch (error) {
       console.error('\n❌ Error:', (error as Error).message);

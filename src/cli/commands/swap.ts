@@ -95,7 +95,7 @@ export const swapCommand = new Command('swap')
       if (result.status === 'Success') {
         console.log('\n✅ Swap completed!');
         console.log('Signature:', result.signature);
-        console.log('Explorer:  https://explorer.solana.com/tx/' + result.signature);
+        console.log('Explorer: ', SolanaClient.getExplorerUrl('tx', result.signature, options.network as Cluster));
       } else {
         console.log('\n❌ Swap failed');
         console.log('Details:', result);

@@ -3,6 +3,7 @@ import { WalletManager } from '../../core/wallet/manager';
 import { SolanaClient } from '../../utils/solana';
 import { FileSystemStorage } from '../../core/storage/filesystem';
 import { PublicKey, Cluster } from '@solana/web3.js';
+import { JupiterClient } from '../../integrations/jupiter/client';
 import Table from 'cli-table3';
 
 export const tokensCommand = new Command('tokens')
@@ -70,31 +71,49 @@ export const tokensCommand = new Command('tokens')
         return;
       }
 
+      // Collect all mints
+      const mints: string[] = [];
+      const tokenData: Array<{ mint: string; balance: number; decimals: number }> = [];
+
       for (const accountInfo of tokenAccounts.value) {
         const parsedInfo = accountInfo.account.data.parsed.info;
         const mint = parsedInfo.mint;
         const balance = parsedInfo.tokenAmount.uiAmount || 0;
         const decimals = parsedInfo.tokenAmount.decimals;
 
-        // Try to get token symbol (simplified - in production would use token list)
-        let symbol = 'Unknown';
-        let name = 'SPL Token';
+        mints.push(mint);
+        tokenData.push({ mint, balance, decimals });
+      }
 
-        // Common tokens
-        const knownTokens: { [key: string]: { name: string; symbol: string } } = {
-          'EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v': { name: 'USD Coin', symbol: 'USDC' },
-          'Es9vMFrzaCERmJfrF4H2FYD4KCoNkY11McCe8BenwNYB': { name: 'Tether USD', symbol: 'USDT' },
-          'DezXAZ8z7PnrnRJjz3wXBoRgixCa6xjnB7YaB1pPB263': { name: 'Bonk', symbol: 'BONK' },
-          'So11111111111111111111111111111111111111112': { name: 'Wrapped SOL', symbol: 'wSOL' },
-        };
+      // Fetch metadata from DexScreener
+      const metadata = await JupiterClient.getTokenMetadata(mints);
 
-        if (knownTokens[mint]) {
-          name = knownTokens[mint].name;
-          symbol = knownTokens[mint].symbol;
+      // Known tokens fallback
+      const knownTokens: { [key: string]: { name: string; symbol: string } } = {
+        'EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v': { name: 'USD Coin', symbol: 'USDC' },
+        'Es9vMFrzaCERmJfrF4H2FYD4KCoNkY11McCe8BenwNYB': { name: 'Tether USD', symbol: 'USDT' },
+        'DezXAZ8z7PnrnRJjz3wXBoRgixCa6xjnB7YaB1pPB263': { name: 'Bonk', symbol: 'BONK' },
+        'So11111111111111111111111111111111111111112': { name: 'Wrapped SOL', symbol: 'wSOL' },
+      };
+
+      // Add tokens to table
+      for (const token of tokenData) {
+        let name = 'Unknown Token';
+        let symbol = 'UNKNOWN';
+
+        // Try DexScreener metadata first
+        if (metadata[token.mint]) {
+          name = metadata[token.mint].name;
+          symbol = metadata[token.mint].symbol;
+        }
+        // Fallback to known tokens
+        else if (knownTokens[token.mint]) {
+          name = knownTokens[token.mint].name;
+          symbol = knownTokens[token.mint].symbol;
         }
 
-        const shortMint = `${mint.slice(0, 8)}...${mint.slice(-8)}`;
-        table.push([name, symbol, balance.toFixed(decimals), decimals.toString(), shortMint]);
+        const shortMint = `${token.mint.slice(0, 8)}...${token.mint.slice(-8)}`;
+        table.push([name, symbol, token.balance.toFixed(token.decimals), token.decimals.toString(), shortMint]);
       }
 
       console.log(table.toString());

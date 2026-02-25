@@ -109,7 +109,7 @@ export const multiSendCommand = new Command('multi-send')
 
       console.log('\n✅ Multi-send completed!');
       console.log('Signature:', signature);
-      console.log('Explorer:  https://explorer.solana.com/tx/' + signature);
+      console.log('Explorer: ', SolanaClient.getExplorerUrl('tx', signature, options.network as Cluster));
       console.log('');
 
     } catch (error) {

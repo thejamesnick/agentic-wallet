@@ -212,38 +212,112 @@ export class JupiterClient {
   };
 
   /**
-   * Get token price in USDC
-   * @param mints Comma separated list of mint addresses
+   * Get token metadata (name, symbol) from DexScreener
+   * @param mints Array of mint addresses
+   */
+  static async getTokenMetadata(mints: string[]): Promise<Record<string, { name: string; symbol: string }>> {
+    try {
+      if (mints.length === 0) return {};
+
+      const metadata: Record<string, { name: string; symbol: string }> = {};
+
+      // Process in chunks of 30
+      const chunks = [];
+      for (let i = 0; i < mints.length; i += 30) {
+        chunks.push(mints.slice(i, i + 30));
+      }
+
+      for (const chunk of chunks) {
+        const addresses = chunk.join(',');
+        const response = await fetch(
+          `https://api.dexscreener.com/latest/dex/tokens/${addresses}`
+        );
+
+        if (!response.ok) {
+          continue;
+        }
+
+        const data = (await response.json()) as any;
+        
+        if (data && data.pairs && Array.isArray(data.pairs)) {
+          for (const pair of data.pairs) {
+            const baseToken = pair.baseToken;
+            if (baseToken && baseToken.address && chunk.includes(baseToken.address)) {
+              metadata[baseToken.address] = {
+                name: baseToken.name || 'Unknown Token',
+                symbol: baseToken.symbol || 'UNKNOWN',
+              };
+            }
+          }
+        }
+      }
+
+      return metadata;
+    } catch (error) {
+      return {};
+    }
+  }
+
+  /**
+   * Get token price in USD using DexScreener (free, no auth required)
+   * @param mints Array of mint addresses
    */
   static async getTokenPrices(mints: string[]): Promise<Record<string, number>> {
     try {
       if (mints.length === 0) return {};
 
-      // Limit to 100 mints per request
-      const chunks = [];
-      for (let i = 0; i < mints.length; i += 100) {
-        chunks.push(mints.slice(i, i + 100));
-      }
-
       const prices: Record<string, number> = {};
 
+      // DexScreener allows batch requests with comma-separated addresses
+      // But we'll do it in chunks of 30 to be safe
+      const chunks = [];
+      for (let i = 0; i < mints.length; i += 30) {
+        chunks.push(mints.slice(i, i + 30));
+      }
+
       for (const chunk of chunks) {
-        const ids = chunk.join(',');
-        const response = await fetch(`${JupiterClient.PRICE_API}?ids=${ids}`);
+        const addresses = chunk.join(',');
+        const response = await fetch(
+          `https://api.dexscreener.com/latest/dex/tokens/${addresses}`
+        );
 
         if (!response.ok) {
-          console.warn(`Jupiter Price API error: ${response.statusText}`);
+          console.warn(`DexScreener API error: ${response.statusText}`);
           continue;
         }
 
         const data = (await response.json()) as any;
-        if (data && data.data) {
-          Object.keys(data.data).forEach(mint => {
-             // Convert string price to number
-             if (data.data[mint] && data.data[mint].price) {
-               prices[mint] = parseFloat(data.data[mint].price);
-             }
-          });
+        
+        if (data && data.pairs && Array.isArray(data.pairs)) {
+          // Group pairs by token address and get the most liquid pair
+          const tokenPairs: Record<string, any[]> = {};
+          
+          for (const pair of data.pairs) {
+            const baseToken = pair.baseToken?.address;
+            if (baseToken && chunk.includes(baseToken)) {
+              if (!tokenPairs[baseToken]) {
+                tokenPairs[baseToken] = [];
+              }
+              tokenPairs[baseToken].push(pair);
+            }
+          }
+
+          // For each token, use the pair with highest liquidity
+          for (const [mint, pairs] of Object.entries(tokenPairs)) {
+            if (pairs.length > 0) {
+              // Sort by liquidity (USD) and take the highest
+              const bestPair = pairs.sort((a, b) => {
+                const liqA = parseFloat(a.liquidity?.usd || '0');
+                const liqB = parseFloat(b.liquidity?.usd || '0');
+                return liqB - liqA;
+              })[0];
+
+              const price = parseFloat(bestPair.priceUsd || '0');
+              if (price > 0) {
+                prices[mint] = price;
+              }
+            }
+          }
         }
       }
 
