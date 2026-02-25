@@ -23,6 +23,9 @@ build/
 *.enc
 .passphrase
 
+# Scripts (private)
+scripts/
+
 # IDE
 .vscode/
 .idea/
