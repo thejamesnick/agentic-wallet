@@ -154,6 +154,7 @@ export class FileSystemStorage {
   /**
    * Load passphrase (decrypt with machine-specific key)
    * Only works on the same machine where it was saved
+   * Auto-migrates legacy wallets (v1 with hostname) to new format (v2 without hostname)
    */
   static async loadPassphrase(agentId: string): Promise<string> {
     const { MachineIdentity } = await import('../crypto/machine-identity');
@@ -161,8 +162,20 @@ export class FileSystemStorage {
     const passphrasePath = FileSystemStorage.getPassphrasePath(agentId);
     const encrypted = await fs.readFile(passphrasePath, 'utf-8');
     
-    // Decrypt with machine-specific key
-    return MachineIdentity.decrypt(encrypted);
+    // Decrypt with machine-specific key (supports v1 fallback)
+    const passphrase = MachineIdentity.decrypt(encrypted);
+    
+    // Check if this was a legacy wallet (v1) by trying to decrypt with v2 key
+    const isLegacy = !MachineIdentity.canDecryptWithV2(encrypted);
+    
+    if (isLegacy) {
+      // Auto-migrate: Re-encrypt with v2 (no hostname) and save
+      console.log('📟 Wallet migrated to v2 (hostname-independent)');
+      const newEncrypted = MachineIdentity.encrypt(passphrase);
+      await fs.writeFile(passphrasePath, newEncrypted, { mode: 0o600 });
+    }
+    
+    return passphrase;
   }
 
   /**
