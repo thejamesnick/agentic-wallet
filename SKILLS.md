@@ -220,6 +220,18 @@ Generated from:
 - Hostname + Username + OS + Architecture + Home directory
 - Wallet files are useless if stolen (only work on your machine)
 
+⚠️ **IMPORTANT - Machine Binding:**
+Your wallets are bound to THIS specific machine. If you:
+- Change your hostname
+- Change your username
+- Reinstall your OS
+- Move to a different computer
+
+Your wallet files will NOT decrypt! Always export your private keys BEFORE making system changes:
+```bash
+paw export <agent-id>  # Backup your keys!
+```
+
 ### Memory Safety
 - Keypairs loaded only when needed
 - Cleared from memory immediately after use

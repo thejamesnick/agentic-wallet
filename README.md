@@ -80,6 +80,9 @@ We're launching on Solana because:
 - **Zero Plaintext**: All secrets encrypted at rest
 - **Memory Safe**: Keys cleared after use
 - **Theft Resistant**: Stolen files are useless
+- **Machine-Bound**: Wallets tied to specific device (hostname, username, OS, architecture, home directory)
+
+⚠️ **Important:** Wallets are bound to your machine. If you change hostname, username, or reinstall OS, you'll need to export/import your private keys before making changes. Always backup your private keys with `paw export <agent-id>` before system changes!
 
 ### 📟 Retro Dashboard
 - **Pager-Style TUI**: Monochrome green-on-black aesthetic
