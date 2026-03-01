@@ -2,6 +2,7 @@ import { Command } from 'commander';
 import { WalletManager } from '../../core/wallet/manager';
 import { SolanaClient } from '../../utils/solana';
 import { JupiterClient } from '../../integrations/jupiter/client';
+import { GuardrailsEngine } from '../../core/guardrails/engine';
 import { Cluster, LAMPORTS_PER_SOL } from '@solana/web3.js';
 
 export const buyCommand = new Command('buy')
@@ -62,6 +63,31 @@ export const buyCommand = new Command('buy')
 
       // Convert max slippage from percentage to basis points
       const slippageBps = Math.floor(parseFloat(options.maxSlippage) * 100);
+
+      // Check guardrails before proceeding
+      const guardrailCheck = await GuardrailsEngine.checkTransaction(
+        options.agentId,
+        budgetAmount,
+        options.currency,
+        'buy'
+      );
+
+      if (!guardrailCheck.allowed) {
+        console.log('\n🛡️  Guardrails: Transaction blocked');
+        console.log('Reason:', guardrailCheck.reason);
+        console.log('');
+        console.log('To adjust limits: paw guardrails', options.agentId, '--show');
+        process.exit(1);
+      }
+
+      if (guardrailCheck.requiresApproval && !options.dryRun) {
+        console.log('\n⚠️  Guardrails: This transaction requires approval');
+        console.log('Amount exceeds approval threshold');
+        console.log('');
+        console.log('To proceed, use: --force flag (coming soon)');
+        console.log('Or adjust threshold: paw guardrails', options.agentId, '--approval-threshold <amount>');
+        process.exit(1);
+      }
 
       console.log('\n📊 Fetching quote from Jupiter...');
       
@@ -128,6 +154,15 @@ export const buyCommand = new Command('buy')
       const result = await JupiterClient.executeSwap(quote, keypair);
 
       if (result.status === 'Success') {
+        // Record transaction in guardrails
+        await GuardrailsEngine.recordTransaction(
+          options.agentId,
+          budgetAmount,
+          options.currency,
+          'buy',
+          guardrailCheck.requiresApproval
+        );
+
         console.log('\n✅ Buy completed!');
         console.log('Signature:', result.signature);
         console.log('Explorer: ', SolanaClient.getExplorerUrl('tx', result.signature, options.network as Cluster));

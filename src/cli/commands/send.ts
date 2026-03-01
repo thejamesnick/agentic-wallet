@@ -3,6 +3,7 @@ import { WalletManager } from '../../core/wallet/manager';
 import { SignerEngine } from '../../core/signer/engine';
 import { SolanaClient } from '../../utils/solana';
 import { FileSystemStorage } from '../../core/storage/filesystem';
+import { GuardrailsEngine } from '../../core/guardrails/engine';
 import {
   SystemProgram,
   Transaction,
@@ -54,6 +55,32 @@ export const sendCommand = new Command('send')
         console.log('Token:   ', options.token);
       }
       console.log('Network: ', network);
+
+      // Check guardrails before proceeding
+      const amount = parseFloat(options.amount);
+      const guardrailCheck = await GuardrailsEngine.checkTransaction(
+        agentId,
+        amount,
+        'SOL', // For now, assume SOL (TODO: handle SPL tokens)
+        'send'
+      );
+
+      if (!guardrailCheck.allowed) {
+        console.log('\n🛡️  Guardrails: Transaction blocked');
+        console.log('Reason:', guardrailCheck.reason);
+        console.log('');
+        console.log('To adjust limits: paw guardrails', agentId, '--show');
+        process.exit(1);
+      }
+
+      if (guardrailCheck.requiresApproval) {
+        console.log('\n⚠️  Guardrails: This transaction requires approval');
+        console.log('Amount exceeds approval threshold');
+        console.log('');
+        console.log('To proceed, use: --force flag (coming soon)');
+        console.log('Or adjust threshold: paw guardrails', agentId, '--approval-threshold <amount>');
+        process.exit(1);
+      }
 
       // Load keypair
       const keypair = await WalletManager.loadKeypairAuto(agentId);
@@ -120,6 +147,15 @@ export const sendCommand = new Command('send')
         transaction,
         keypair,
         connection
+      );
+
+      // Record transaction in guardrails
+      await GuardrailsEngine.recordTransaction(
+        agentId,
+        amount,
+        'SOL',
+        'send',
+        guardrailCheck.requiresApproval
       );
 
       console.log('\n✅ Transaction sent!');

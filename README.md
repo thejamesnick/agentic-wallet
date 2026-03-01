@@ -53,7 +53,14 @@ We're launching on Solana because:
 
 ## Key Features
 
-### 🤖 Intent-Based Commands (NEW!)
+### 🛡️ Guardrails & Safety (NEW!)
+- **Risk Profiles**: Micro, Conservative, Moderate, Degen, Whale
+- **Spending Limits**: Per-transaction, per-hour, per-day caps
+- **Real-Time Tracking**: Monitor spending and remaining limits
+- **Easy On/Off**: Enable/disable protection anytime
+- **Protects from Drainage**: Even attackers can't exceed your limits
+
+### 🤖 Intent-Based Commands
 - **Agent-Friendly Interface**: High-level buy/sell commands
 - **Smart Quoting**: Automatic price impact and confidence calculation
 - **Dry Run Mode**: Test strategies without executing

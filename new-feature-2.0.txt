@@ -23,18 +23,18 @@ Roadmap from Simple → Hard
    - Difficulty: 🟢 Easy (1-2 days)
    - Why: No new infrastructure, just skip execution step
 
-4. Session-Based Authentication 🟡 MEDIUM
-   - Add: paw login --agent-id <id> --passphrase <pass>
-   - Returns session token, stores in ~/.config/paw/sessions/
-   - Add: paw session status/renew/revoke
-   - All commands accept --session flag or PAW_SESSION env var
-   - Difficulty: 🟡 Medium (5-7 days)
-   - Why: New auth layer, token management, expiry logic
+4. Session-Based Authentication 🟡 MEDIUM ⏸️ SKIPPED (Not needed - autoload already works!)
+   - Current system already autonomous (no passphrase prompts)
+   - loadKeypairAuto() uses machine-specific encrypted passphrase
+   - Only needed for REST API or multi-machine deployments
+   - Performance: 50-100ms overhead (negligible vs network calls)
+   - Decision: Skip for now, revisit when building REST API
 
-5. Basic Guardrails Config 🟡 MEDIUM
-   - Add: paw config set-limits --per-tx 0.5 --per-hour 1.0 --per-day 5.0
-   - Store in ~/.paw/agents/<id>/limits.json
+5. Basic Guardrails Config 🟡 MEDIUM ✅ SHIPPED v1.2.0
+   - Add: paw guardrails <agent-id> --enable --profile micro
+   - Store in ~/.paw/guardrails/<agent-id>.json
    - Check limits before executing any transaction
+   - Risk profiles: micro, conservative, moderate, degen, whale
    - Difficulty: 🟡 Medium (3-4 days)
    - Why: Config management + validation logic
 
@@ -113,23 +113,22 @@ Week 14+: Advanced features (10-14)
 
 === MINIMUM VIABLE AUTONOMOUS WALLET (MVP) ===
 
-To have a SOLID autonomous wallet, ship these 5 core features:
+To have a SOLID autonomous wallet, ship these 3 core features:
+(Session auth removed - already autonomous!)
 
 ✅ MUST SHIP:
-1. Session Auth (#4) - Agents can't operate without this
-2. Intent Buy/Sell (#1, #2) - High-level commands agents understand
-3. Basic Strategy Engine (#8) - Set and forget (take-profit/stop-loss)
-4. Guardrails (#5) - Spending limits for safety
-5. Event Logging (#7) - Agents need to know what happened
+1. Intent Buy/Sell (#1, #2) - High-level commands agents understand ✅ SHIPPED v1.1.0
+2. Guardrails (#5) - Spending limits for safety ✅ SHIPPED v1.2.0
+3. Event Logging (#7) - Agents need to know what happened 👈 NEXT
+4. Basic Strategy Engine (#8) - Set and forget (take-profit/stop-loss)
 
 🎯 SHIPPING ORDER (MVP):
-Week 1-2: #1, #2 (Buy/sell intents) - Foundation
-Week 3-4: #4 (Session auth) - Unlock autonomy
-Week 5: #5 (Guardrails) - Safety first
-Week 6: #7 (Event logging) - Visibility
-Week 7-9: #8 (Strategy engine) - True autonomy
+Week 1-2: #1, #2 (Buy/sell intents) - Foundation ✅ DONE
+Week 3-4: #5 (Guardrails) - Safety first ✅ DONE
+Week 5: #7 (Event logging) - Visibility 👈 NEXT
+Week 6-8: #8 (Strategy engine) - True autonomy
 
-Ship these 5 = Legit autonomous wallet ✨
+Ship these 4 = Legit autonomous wallet ✨
 
 OPTIONAL (Nice to have but not required):
 - #3 Dry run - Testing

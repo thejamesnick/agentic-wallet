@@ -2,6 +2,74 @@
 
 All notable changes to PAW (PocketAgent Wallet) will be documented in this file.
 
+## [1.2.0] - 2026-03-01
+
+### Added - Guardrails (Spending Limits & Safety)
+
+#### 🛡️ New Command
+- **`paw guardrails`** - Manage spending limits and safety guardrails
+  - Enable/disable guardrails for any agent
+  - Risk profiles: micro, conservative, moderate, degen, whale
+  - Custom limits: per-transaction, per-hour, per-day
+  - Approval thresholds for large transactions
+  - Reserve SOL for gas fees
+  - Real-time spending tracking
+  - Example: `paw guardrails agent-alice --enable --profile micro`
+
+#### ✨ Features
+- **Risk Profiles** - Pre-configured limit sets for different use cases:
+  - **Micro**: 0.1 SOL/tx, 0.5 SOL/hour, 2 SOL/day (perfect for $100 wallets)
+  - **Conservative**: 0.5 SOL/tx, 2 SOL/hour, 10 SOL/day
+  - **Moderate**: 2 SOL/tx, 10 SOL/hour, 50 SOL/day
+  - **Degen**: 10 SOL/tx, 50 SOL/hour, 200 SOL/day (meme trading)
+  - **Whale**: 100 SOL/tx, 500 SOL/hour, 2000 SOL/day
+
+- **Transaction Tracking** - Automatic spending history
+  - Tracks all buy/sell/send transactions
+  - Hourly and daily spending summaries
+  - Shows remaining limits in real-time
+
+- **Integrated Protection** - Guardrails check all transactions
+  - `paw buy` - Checks before executing swaps
+  - `paw send` - Checks before sending SOL/tokens
+  - Blocks transactions that exceed limits
+  - Optional approval for large amounts
+
+- **Easy On/Off** - Simple enable/disable
+  - `--enable` to turn on protection
+  - `--disable` to remove all limits
+  - `--show` to check current status
+  - Disabled by default (opt-in for safety)
+
+#### 🔒 Security Benefits
+- **Protects from wallet drainage** - Even if attacker gets access
+- **Prevents agent mistakes** - Buggy code can't drain wallet
+- **Configurable safety** - Set limits that match your risk tolerance
+- **No performance impact** - Only checks when guardrails enabled
+
+#### 📚 Documentation
+- Updated SKILLS.md with guardrails examples
+- Added risk profile explanations
+- Created guardrails usage guide
+
+#### 🎯 Why This Matters
+Guardrails transform PAW from "autonomous but risky" to "autonomous and safe". Agents can trade freely within limits you set, but can't drain your entire wallet if something goes wrong.
+
+**Use Cases:**
+- Testing new trading strategies with limited risk
+- Running untrusted agent code safely
+- Setting daily budgets for trading bots
+- Protecting against bugs or exploits
+
+### Technical Details
+- Guardrails stored in `~/.paw/guardrails/<agent-id>.json`
+- Transaction history kept (last 1000 transactions)
+- Time-window based limits (rolling hour/day)
+- Integrated into buy and send commands
+- Zero overhead when disabled
+
+---
+
 ## [1.1.0] - 2026-03-01
 
 ### Added - Intent-Based Commands (Agentic Wallet v2.0 Phase 1)

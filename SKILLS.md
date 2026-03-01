@@ -46,6 +46,12 @@ paw balance <agent-id>
 # List all tokens
 paw tokens <agent-id>
 
+# 🛡️ Guardrails - Spending limits and safety (NEW!)
+paw guardrails <agent-id> --enable --profile micro    # Enable with micro profile ($100 wallets)
+paw guardrails <agent-id> --enable --profile degen    # Enable with degen profile (meme trading)
+paw guardrails <agent-id> --disable                   # Disable all limits
+paw guardrails <agent-id> --show                      # Check status and spending
+
 # Send SOL
 paw send <agent-id> --to <address> --amount <sol-amount>
 
@@ -83,7 +89,29 @@ paw config <agent-id> --show
 
 ## AI Agent Workflow Examples
 
-### Example 1: Check Balance Before Action
+### Example 1: Safe Trading with Guardrails (NEW!)
+
+```bash
+# Enable guardrails for safety (micro profile for $100 wallet)
+paw guardrails trading-bot-001 --enable --profile micro
+
+# Check limits
+paw guardrails trading-bot-001 --show
+# Shows: 0.1 SOL/tx, 0.5 SOL/hour, 2 SOL/day
+
+# Try to buy within limits
+paw buy --agent-id trading-bot-001 --token BONK --budget 0.05
+# ✅ Allowed (under 0.1 SOL limit)
+
+# Try to buy over limits
+paw buy --agent-id trading-bot-001 --token BONK --budget 0.2
+# ❌ Blocked by guardrails!
+
+# Disable guardrails when needed
+paw guardrails trading-bot-001 --disable
+```
+
+### Example 2: Check Balance Before Action
 
 ```bash
 # Get balance
@@ -512,16 +540,103 @@ PAW provides clear error messages:
 
 ## Tips for AI Agents
 
-1. **Use intent-based commands (buy/sell) for easier automation**
-2. **Always test with --dry-run before executing real trades**
-3. **Check balance before transactions**
-4. **Use --network flag to override config when needed**
-5. **Monitor transaction history to verify operations**
-6. **Start on devnet for testing, move to mainnet when ready**
-7. **Use tokens command to see all assets**
-8. **Set network in config to avoid repeating --network flag**
-9. **Intent commands show confidence scores - use them for decision making**
-10. **Percentage-based selling (50%, 100%) is easier than calculating exact amounts**
+1. **Use guardrails to protect from draining wallet (enable with --profile micro for small wallets)**
+2. **Use intent-based commands (buy/sell) for easier automation**
+3. **Always test with --dry-run before executing real trades**
+4. **Check balance before transactions**
+5. **Use --network flag to override config when needed**
+6. **Monitor transaction history to verify operations**
+7. **Start on devnet for testing, move to mainnet when ready**
+8. **Use tokens command to see all assets**
+9. **Set network in config to avoid repeating --network flag**
+10. **Intent commands show confidence scores - use them for decision making**
+11. **Percentage-based selling (50%, 100%) is easier than calculating exact amounts**
+12. **Check guardrails spending with --show to see remaining limits**
+
+## Guardrails (Spending Limits)
+
+### Risk Profiles
+
+```bash
+# Micro - Perfect for $100 wallets
+paw guardrails bot --enable --profile micro
+# Limits: 0.1 SOL/tx, 0.5 SOL/hour, 2 SOL/day
+
+# Conservative - Cautious trading
+paw guardrails bot --enable --profile conservative
+# Limits: 0.5 SOL/tx, 2 SOL/hour, 10 SOL/day
+
+# Moderate - Balanced (default)
+paw guardrails bot --enable --profile moderate
+# Limits: 2 SOL/tx, 10 SOL/hour, 50 SOL/day
+
+# Degen - Meme coin trading
+paw guardrails bot --enable --profile degen
+# Limits: 10 SOL/tx, 50 SOL/hour, 200 SOL/day
+
+# Whale - Big money
+paw guardrails bot --enable --profile whale
+# Limits: 100 SOL/tx, 500 SOL/hour, 2000 SOL/day
+```
+
+### Custom Limits
+
+```bash
+# Set custom limits
+paw guardrails bot --enable --per-tx 0.5 --per-hour 2 --per-day 10
+
+# Set approval threshold
+paw guardrails bot --enable --approval-threshold 0.3
+# Transactions above 0.3 SOL require approval
+
+# Reserve SOL for gas
+paw guardrails bot --enable --reserve-gas 0.001
+```
+
+### Managing Guardrails
+
+```bash
+# Check status and spending
+paw guardrails bot --show
+
+# Disable all limits
+paw guardrails bot --disable
+
+# Re-enable with different profile
+paw guardrails bot --enable --profile degen
+```
+
+### Why Use Guardrails?
+
+- **Protect from bugs** - Buggy agent code can't drain wallet
+- **Test safely** - Try new strategies with limited risk
+- **Prevent exploits** - Even if attacker gets access, damage is limited
+- **Daily budgets** - Set spending limits for trading bots
+- **Peace of mind** - Sleep well knowing wallet is protected
+
+### Guardrails in Action
+
+```bash
+#!/bin/bash
+# Safe trading bot with guardrails
+
+AGENT="safe-bot"
+
+# Enable micro profile (0.1 SOL/tx limit)
+paw guardrails $AGENT --enable --profile micro
+
+# Try to buy 0.05 SOL of BONK (allowed)
+paw buy --agent-id $AGENT --token BONK --budget 0.05
+# ✅ Transaction allowed
+
+# Try to buy 0.2 SOL of BONK (blocked)
+paw buy --agent-id $AGENT --token BONK --budget 0.2
+# ❌ Blocked: Exceeds per-transaction limit
+
+# Check spending
+paw guardrails $AGENT --show
+# Shows: 0.05 SOL spent, 0.45 SOL remaining this hour
+```
 
 ## File Locations
 
