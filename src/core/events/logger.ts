@@ -114,15 +114,87 @@ export class EventLogger {
       }
     }
 
-    // Write to file (JSON lines format)
-    const eventLine = JSON.stringify(event) + '\n';
-    
-    try {
-      await fs.appendFile(subscription.path, eventLine);
-    } catch (error) {
-      // If file doesn't exist, create it
-      await fs.writeFile(subscription.path, eventLine);
+    // Handle different formats
+    if (subscription.format === 'webhook') {
+      // Send webhook
+      await this.sendWebhook(subscription, event);
+    } else {
+      // Write to file (JSON lines format)
+      const eventLine = JSON.stringify(event) + '\n';
+      
+      try {
+        await fs.appendFile(subscription.path!, eventLine);
+      } catch (error) {
+        // If file doesn't exist, create it
+        await fs.writeFile(subscription.path!, eventLine);
+      }
     }
+  }
+
+  /**
+   * Send webhook with retry logic
+   */
+  private static async sendWebhook(
+    subscription: EventSubscription,
+    event: WalletEvent
+  ): Promise<void> {
+    const maxRetries = subscription.retry || 3;
+    const timeout = subscription.timeout || 5000;
+
+    for (let attempt = 1; attempt <= maxRetries; attempt++) {
+      try {
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), timeout);
+
+        const response = await fetch(subscription.url!, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'User-Agent': 'PAW-Wallet/1.3.0',
+          },
+          body: JSON.stringify(event),
+          signal: controller.signal,
+        });
+
+        clearTimeout(timeoutId);
+
+        if (response.ok) {
+          // Success!
+          return;
+        }
+
+        // Retry on 5xx errors
+        if (response.status >= 500 && attempt < maxRetries) {
+          const delay = 1000 * Math.pow(2, attempt); // Exponential backoff
+          await this.sleep(delay);
+          continue;
+        }
+
+        // Don't retry on 4xx errors
+        console.error(`Webhook failed: ${response.status} ${response.statusText}`);
+        return;
+      } catch (error: any) {
+        if (error.name === 'AbortError') {
+          console.error(`Webhook timeout after ${timeout}ms`);
+        } else {
+          console.error(`Webhook error:`, error.message);
+        }
+
+        if (attempt === maxRetries) {
+          console.error(`Webhook failed after ${maxRetries} attempts`);
+        } else {
+          const delay = 1000 * Math.pow(2, attempt);
+          await this.sleep(delay);
+        }
+      }
+    }
+  }
+
+  /**
+   * Sleep helper for retry delays
+   */
+  private static sleep(ms: number): Promise<void> {
+    return new Promise(resolve => setTimeout(resolve, ms));
   }
 
   /**
@@ -131,7 +203,7 @@ export class EventLogger {
   static async readEvents(agentId: string, limit: number = 100): Promise<WalletEvent[]> {
     const subscription = await this.getSubscription(agentId);
     
-    if (!subscription) {
+    if (!subscription || !subscription.path) {
       return [];
     }
 
@@ -163,7 +235,7 @@ export class EventLogger {
   static async clearEvents(agentId: string): Promise<void> {
     const subscription = await this.getSubscription(agentId);
     
-    if (subscription) {
+    if (subscription && subscription.path) {
       try {
         await fs.unlink(subscription.path);
       } catch {

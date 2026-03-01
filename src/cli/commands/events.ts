@@ -9,7 +9,10 @@ export const eventsCommand = new Command('events')
   .option('--subscribe', 'Subscribe to events')
   .option('--unsubscribe', 'Unsubscribe from events')
   .option('--path <path>', 'Log file path (default: ~/.paw/events/<agent-id>.log)')
-  .option('--format <format>', 'Event format: file, json (default: file)', 'file')
+  .option('--format <format>', 'Event format: file, webhook (default: file)', 'file')
+  .option('--url <url>', 'Webhook URL (required for webhook format)')
+  .option('--retry <number>', 'Webhook retry attempts (default: 3)', '3')
+  .option('--timeout <number>', 'Webhook timeout in ms (default: 5000)', '5000')
   .option('--events <types>', 'Filter specific event types (comma-separated)')
   .option('--show', 'Show recent events')
   .option('--limit <number>', 'Number of events to show (default: 20)', '20')
@@ -39,8 +42,33 @@ export const eventsCommand = new Command('events')
 
       // Subscribe to events
       if (options.subscribe) {
+        // Validate webhook format
+        if (options.format === 'webhook') {
+          if (!options.url) {
+            console.error('❌ Error: --url is required for webhook format');
+            console.log('');
+            console.log('Example:');
+            console.log(`  paw events ${agentId} --subscribe --format webhook --url https://myagent.com/webhook`);
+            console.log('');
+            process.exit(1);
+          }
+          
+          // Validate URL format
+          try {
+            new URL(options.url);
+          } catch {
+            console.error('❌ Error: Invalid URL format');
+            console.log('');
+            console.log('URL must be a valid HTTP/HTTPS URL, e.g.:');
+            console.log('  http://localhost:3000/webhook');
+            console.log('  https://myagent.com/webhook');
+            console.log('');
+            process.exit(1);
+          }
+        }
+        
         const defaultPath = `${process.env.HOME}/.paw/events/${agentId}.log`;
-        const logPath = options.path || defaultPath;
+        const logPath = options.format === 'webhook' ? undefined : (options.path || defaultPath);
         
         // Parse event types filter
         let eventTypes: string[] | undefined;
@@ -52,20 +80,39 @@ export const eventsCommand = new Command('events')
           agent_id: agentId,
           format: options.format,
           path: logPath,
+          url: options.url,
+          retry: parseInt(options.retry),
+          timeout: parseInt(options.timeout),
           events: eventTypes as any,
           enabled: true,
         });
         
         console.log('✅ Event logging enabled');
-        console.log('Log file:', logPath);
+        
+        if (options.format === 'webhook') {
+          console.log('Webhook URL:', options.url);
+          console.log('Retry attempts:', options.retry);
+          console.log('Timeout:', options.timeout, 'ms');
+        } else {
+          console.log('Log file:', logPath);
+        }
+        
         if (eventTypes) {
           console.log('Filtering:', eventTypes.join(', '));
         } else {
           console.log('Logging: All events');
         }
         console.log('');
-        console.log('💡 Tip: Tail the log file to see events in real-time:');
-        console.log(`   tail -f ${logPath}`);
+        
+        if (options.format === 'webhook') {
+          console.log('💡 Tip: Your webhook endpoint should:');
+          console.log('   - Accept POST requests with JSON body');
+          console.log('   - Respond with 200 OK status');
+          console.log('   - Process events asynchronously');
+        } else {
+          console.log('💡 Tip: Tail the log file to see events in real-time:');
+          console.log(`   tail -f ${logPath}`);
+        }
         console.log('');
       }
 
@@ -135,19 +182,32 @@ export const eventsCommand = new Command('events')
         if (subscription) {
           console.log('📊 Event Logging Status: ✅ Enabled');
           console.log('');
-          console.log('Log file:', subscription.path);
-          console.log('Format:  ', subscription.format);
+          
+          if (subscription.format === 'webhook') {
+            console.log('Format:   webhook');
+            console.log('URL:     ', subscription.url);
+            console.log('Retry:   ', subscription.retry || 3, 'attempts');
+            console.log('Timeout: ', subscription.timeout || 5000, 'ms');
+          } else {
+            console.log('Format:  ', subscription.format);
+            console.log('Log file:', subscription.path);
+          }
+          
           if (subscription.events && subscription.events.length > 0) {
             console.log('Filtering:', subscription.events.join(', '));
           } else {
             console.log('Filtering: All events');
           }
           console.log('');
-          console.log('💡 View events: paw events', agentId, '--show');
+          
+          if (subscription.format !== 'webhook') {
+            console.log('💡 View events: paw events', agentId, '--show');
+          }
         } else {
           console.log('📊 Event Logging Status: ❌ Disabled');
           console.log('');
           console.log('💡 Enable logging: paw events', agentId, '--subscribe');
+          console.log('💡 Enable webhooks: paw events', agentId, '--subscribe --format webhook --url <url>');
         }
         console.log('');
       }

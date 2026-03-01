@@ -22,10 +22,13 @@ export interface WalletEvent {
 
 export interface EventSubscription {
   agent_id: string;
-  format: 'file' | 'json';
-  path: string;
+  format: 'file' | 'json' | 'webhook';
+  path?: string; // For file format
+  url?: string; // For webhook format
   events?: EventType[]; // Filter specific events, or all if undefined
   enabled: boolean;
+  retry?: number; // Number of retries for webhooks (default: 3)
+  timeout?: number; // Timeout in ms for webhooks (default: 5000)
 }
 
 export interface EventLogConfig {

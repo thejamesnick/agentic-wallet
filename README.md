@@ -60,6 +60,14 @@ We're launching on Solana because:
 - **Easy On/Off**: Enable/disable protection anytime
 - **Protects from Drainage**: Even attackers can't exceed your limits
 
+### 📊 Event Logging & Webhooks (NEW!)
+- **File-Based Logging**: JSON lines format for easy parsing
+- **Webhook Support**: Receive HTTP POST notifications for events
+- **Real-Time Monitoring**: Tail log files or receive webhooks instantly
+- **Event Filtering**: Subscribe to specific event types
+- **Automatic Retry**: Reliable webhook delivery with exponential backoff
+- **Perfect for Agents**: Build event-driven workflows easily
+
 ### 🤖 Intent-Based Commands
 - **Agent-Friendly Interface**: High-level buy/sell commands
 - **Smart Quoting**: Automatic price impact and confidence calculation

@@ -52,9 +52,10 @@ paw guardrails <agent-id> --enable --profile degen    # Enable with degen profil
 paw guardrails <agent-id> --disable                   # Disable all limits
 paw guardrails <agent-id> --show                      # Check status and spending
 
-# 📊 Events - Event logging and monitoring (NEW!)
-paw events <agent-id> --subscribe                     # Enable event logging
+# 📊 Events - Event logging and webhooks (NEW!)
+paw events <agent-id> --subscribe                     # Enable file-based event logging
 paw events <agent-id> --subscribe --path ./my.log     # Custom log path
+paw events <agent-id> --subscribe --format webhook --url <url>  # Enable webhooks
 paw events <agent-id> --show                          # View recent events
 paw events <agent-id> --show --limit 50               # Show last 50 events
 paw events <agent-id> --unsubscribe                   # Disable logging
@@ -660,9 +661,9 @@ paw guardrails $AGENT --show
 # Shows: 0.05 SOL spent, 0.45 SOL remaining this hour
 ```
 
-## Event Logging (Visibility)
+## Event Logging (Visibility & Webhooks)
 
-### Enable Event Logging
+### File-Based Event Logging
 
 ```bash
 # Enable logging for an agent
@@ -673,6 +674,223 @@ paw events bot --subscribe --path ./my-events.log
 
 # Filter specific events
 paw events bot --subscribe --events transaction_executed,error_occurred
+```
+
+### Webhook Events (Real-Time HTTP Notifications)
+
+```bash
+# Enable webhooks (agent receives HTTP POST for each event)
+paw events bot --subscribe --format webhook --url https://myagent.com/webhook
+
+# With custom retry and timeout
+paw events bot --subscribe \
+  --format webhook \
+  --url http://localhost:3000/webhook \
+  --retry 3 \
+  --timeout 5000
+
+# Filter specific events
+paw events bot --subscribe \
+  --format webhook \
+  --url https://myagent.com/webhook \
+  --events transaction_executed,error_occurred
+```
+
+### Webhook Payload
+
+When an event occurs, PAW sends an HTTP POST to your webhook URL:
+
+```http
+POST https://myagent.com/webhook
+Content-Type: application/json
+
+{
+  "event_id": "evt_1772375916023_6c44e214",
+  "timestamp": "2026-03-01T14:38:36.023Z",
+  "agent_id": "agent-alice",
+  "type": "transaction_executed",
+  "severity": "info",
+  "message": "Send completed: 0.001 SOL to 9aQGpyZHw4L8YzQGvRA3cVqJz5FvPPdRzFvXYbqzKvXx",
+  "payload": {
+    "type": "send",
+    "to": "9aQGpyZHw4L8YzQGvRA3cVqJz5FvPPdRzFvXYbqzKvXx",
+    "amount": 0.001,
+    "token": "SOL",
+    "signature": "3qRXxpA7C8reodAigk2BnspQQGdFARs3Zt67JHXc9HH1BVpmjaiLBEsiQHmXye9fuREDVX2NkEKgeLTACUkppBUP",
+    "explorer": "https://explorer.solana.com/tx/..."
+  }
+}
+```
+
+### Copy-Paste Webhook Server (Node.js)
+
+Save this as `paw-webhook.js` and run with `node paw-webhook.js`:
+
+```javascript
+#!/usr/bin/env node
+/**
+ * 📟 PAW Webhook Server
+ * 
+ * Copy-paste ready webhook server for receiving PAW events.
+ * Perfect for AI agents, Discord bots, monitoring dashboards, etc.
+ * 
+ * Setup:
+ *   1. npm install express
+ *   2. node paw-webhook.js
+ *   3. paw events <agent-id> --subscribe --format webhook --url http://localhost:3000/webhook
+ * 
+ * Customize the handleEvent() function for your use case!
+ */
+
+const express = require('express');
+const app = express();
+const PORT = process.env.PORT || 3000;
+
+app.use(express.json());
+
+// 🎯 Customize this function for your agent's logic
+function handleEvent(event) {
+  console.log('\n' + '='.repeat(60));
+  console.log('📟 PAW Event Received');
+  console.log('='.repeat(60));
+  console.log('Event ID:  ', event.event_id);
+  console.log('Agent:     ', event.agent_id);
+  console.log('Type:      ', event.type);
+  console.log('Severity:  ', event.severity);
+  console.log('Message:   ', event.message);
+  console.log('Timestamp: ', new Date(event.timestamp).toLocaleString());
+  
+  // Handle different event types
+  switch (event.type) {
+    case 'transaction_executed':
+      console.log('\n✅ Transaction Success!');
+      console.log('Signature: ', event.payload.signature);
+      console.log('Explorer:  ', event.payload.explorer);
+      // TODO: Post to Discord, update database, notify user, etc.
+      break;
+      
+    case 'transaction_failed':
+      console.log('\n❌ Transaction Failed!');
+      console.log('Reason:    ', event.message);
+      // TODO: Send alert, retry logic, log error, etc.
+      break;
+      
+    case 'guardrail_blocked':
+      console.log('\n🛡️  Transaction Blocked by Guardrails');
+      console.log('Reason:    ', event.message);
+      // TODO: Log security event, notify admin, etc.
+      break;
+      
+    case 'error_occurred':
+      console.log('\n⚠️  Error Occurred');
+      console.log('Error:     ', event.message);
+      // TODO: Send alert, log error, trigger recovery, etc.
+      break;
+      
+    default:
+      console.log('\nPayload:', JSON.stringify(event.payload, null, 2));
+  }
+  
+  console.log('='.repeat(60) + '\n');
+}
+
+// Webhook endpoint
+app.post('/webhook', (req, res) => {
+  try {
+    const event = req.body;
+    
+    // Validate event structure
+    if (!event.event_id || !event.type || !event.agent_id) {
+      return res.status(400).json({ 
+        error: 'Invalid event structure' 
+      });
+    }
+    
+    // Respond immediately (PAW will retry if no 200)
+    res.status(200).json({ 
+      received: true, 
+      event_id: event.event_id,
+      timestamp: new Date().toISOString()
+    });
+    
+    // Process event asynchronously
+    setImmediate(() => {
+      try {
+        handleEvent(event);
+      } catch (error) {
+        console.error('Error handling event:', error);
+      }
+    });
+    
+  } catch (error) {
+    console.error('Webhook error:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+// Health check endpoint
+app.get('/health', (req, res) => {
+  res.json({ 
+    status: 'ok', 
+    service: 'PAW Webhook Server',
+    uptime: process.uptime(),
+    timestamp: new Date().toISOString()
+  });
+});
+
+// Start server
+app.listen(PORT, () => {
+  console.log('\n📟 PAW Webhook Server');
+  console.log('='.repeat(60));
+  console.log('Status:    Running');
+  console.log('Port:      ' + PORT);
+  console.log('Webhook:   http://localhost:' + PORT + '/webhook');
+  console.log('Health:    http://localhost:' + PORT + '/health');
+  console.log('='.repeat(60));
+  console.log('\nConfigure PAW with:');
+  console.log('  paw events <agent-id> --subscribe --format webhook --url http://localhost:' + PORT + '/webhook');
+  console.log('\nWaiting for events...\n');
+});
+
+// Graceful shutdown
+process.on('SIGINT', () => {
+  console.log('\n\n📟 Shutting down PAW webhook server...');
+  process.exit(0);
+});
+```
+
+**Quick Start:**
+```bash
+# 1. Install express
+npm install express
+
+# 2. Save the code above as paw-webhook.js
+
+# 3. Start the server
+node paw-webhook.js
+
+# 4. Configure PAW (in another terminal)
+paw events my-agent --subscribe --format webhook --url http://localhost:3000/webhook
+
+# 5. Test it!
+paw send --agent-id my-agent --to <address> --amount 0.01
+```
+
+### Test Webhook Server
+
+PAW includes a test webhook server for development:
+
+```bash
+# Start test server
+node examples/test-webhook-server.js
+
+# Configure PAW to use it
+paw events bot --subscribe --format webhook --url http://localhost:3000/webhook
+
+# Execute transaction to test
+paw send --agent-id bot --to <address> --amount 0.01
+
+# Check server output - you'll see the webhook event!
 ```
 
 ### View Events
@@ -732,9 +950,10 @@ cat ~/.paw/events/bot.log | jq 'select(.severity=="error")'
 ### Why Use Event Logging?
 
 - **Real-time monitoring** - See what's happening as it happens
+- **Webhooks for agents** - Receive HTTP POST notifications for event-driven workflows
 - **Debugging** - Track down errors and failures
 - **Auditing** - Keep records of all transactions
-- **Automation** - Build event-driven workflows
+- **Automation** - Build event-driven workflows (webhooks make this easy!)
 - **Compliance** - Maintain transaction logs
 
 ### Event Logging in Action

@@ -2,6 +2,90 @@
 
 All notable changes to PAW (PocketAgent Wallet) will be documented in this file.
 
+## [1.4.0] - 2026-03-01
+
+### Added - Webhook Events (Real-Time HTTP Notifications)
+
+#### 🔔 Webhook Support
+- **HTTP POST Notifications** - Receive events via webhooks instead of file logging
+  - Configure with `--format webhook --url <url>`
+  - PAW sends HTTP POST to your endpoint for each event
+  - Perfect for event-driven agent workflows
+  - Example: `paw events bot --subscribe --format webhook --url https://myagent.com/webhook`
+
+#### ✨ Features
+- **Automatic Retry Logic** - Reliable delivery with exponential backoff
+  - 3 retry attempts by default (configurable with `--retry`)
+  - Exponential backoff: 2s, 4s, 8s delays
+  - Only retries on 5xx errors (server issues)
+  - Skips retry on 4xx errors (client issues)
+
+- **Timeout Handling** - Prevents hanging on slow endpoints
+  - 5 second timeout by default (configurable with `--timeout`)
+  - Aborts request if endpoint doesn't respond
+  - Continues to next event without blocking
+
+- **Standard HTTP Format** - Easy to integrate with any agent
+  - Content-Type: application/json
+  - User-Agent: PAW-Wallet/1.4.0
+  - Clean JSON payload with all event details
+
+#### 📡 Webhook Payload
+```json
+{
+  "event_id": "evt_1772375916023_6c44e214",
+  "timestamp": "2026-03-01T14:38:36.023Z",
+  "agent_id": "agent-alice",
+  "type": "transaction_executed",
+  "severity": "info",
+  "message": "Send completed: 0.001 SOL to ...",
+  "payload": {
+    "type": "send",
+    "to": "...",
+    "amount": 0.001,
+    "token": "SOL",
+    "signature": "...",
+    "explorer": "..."
+  }
+}
+```
+
+#### 🧪 Test Webhook Server
+- **Included Test Server** - `examples/test-webhook-server.js`
+  - Simple Node.js server for testing webhooks
+  - Displays all received events in formatted output
+  - Perfect for development and debugging
+  - Usage: `node examples/test-webhook-server.js`
+
+#### 🎯 Why This Matters
+Webhooks enable true event-driven agent workflows. Instead of polling or tailing log files, agents receive instant HTTP notifications when wallet events occur. This is perfect for:
+- **OpenClaw and AI agents** - Receive notifications in your agent's HTTP server
+- **Discord/Telegram bots** - Post transaction updates to chat
+- **Monitoring dashboards** - Real-time wallet activity displays
+- **Automated responses** - Trigger actions based on wallet events
+- **Multi-agent coordination** - Notify other agents of transactions
+
+**Use Cases:**
+- Agent receives webhook → Posts to Discord: "🎉 Bought 1000 BONK!"
+- Agent receives error webhook → Sends alert: "⚠️ Transaction failed"
+- Agent receives guardrail block → Logs security event
+- Agent receives transaction → Updates internal database
+
+#### 📚 Documentation
+- Created comprehensive `WEBHOOK-SPEC.md` with implementation details
+- Updated SKILLS.md with webhook examples
+- Added test webhook server with usage instructions
+- Included webhook integration examples for agents
+
+### Technical Details
+- Webhooks use native fetch API (Node.js 18+)
+- Retry logic with exponential backoff (1s, 2s, 4s, 8s)
+- Configurable timeout (default: 5000ms)
+- No blocking - failed webhooks don't stop event processing
+- Webhook config stored in `~/.paw/events/config.json`
+
+---
+
 ## [1.3.0] - 2026-03-01
 
 ### Added - Event Logging (Agent Visibility)
