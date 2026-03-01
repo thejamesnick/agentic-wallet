@@ -46,6 +46,25 @@ paw balance <agent-id>
 # List all tokens
 paw tokens <agent-id>
 
+# 🛡️ Guardrails - Spending limits and safety (NEW!)
+paw guardrails <agent-id> --enable --profile micro    # Enable with micro profile ($100 wallets)
+paw guardrails <agent-id> --enable --profile degen    # Enable with degen profile (meme trading)
+paw guardrails <agent-id> --disable                   # Disable all limits
+paw guardrails <agent-id> --show                      # Check status and spending
+
+# 📊 Events - Event logging and webhooks (NEW!)
+paw events <agent-id> --subscribe                     # Enable file-based event logging
+paw events <agent-id> --subscribe --path ./my.log     # Custom log path
+paw events <agent-id> --subscribe --format webhook --url <url>  # Enable webhooks
+paw events <agent-id> --show                          # View recent events
+paw events <agent-id> --show --limit 50               # Show last 50 events
+paw events <agent-id> --unsubscribe                   # Disable logging
+paw events <agent-id> --clear                         # Clear event log
+
+# 🔔 Real-Time Balance Monitoring (NEW!)
+paw monitor <agent-id>                                # Monitor wallet for balance changes
+paw monitor <agent-id> --network mainnet-beta         # Monitor on specific network
+
 # Send SOL
 paw send <agent-id> --to <address> --amount <sol-amount>
 
@@ -59,6 +78,18 @@ paw multi-send <agent-id> --addresses <addr1>,<addr2> --amounts <amount1>,<amoun
 paw swap <agent-id> --from <token> --to <token> --amount <amount>
 # Amount can be exact (0.5) or percentage (50%)
 
+# 🆕 Intent-based buy (agent-friendly!)
+paw buy --agent-id <agent-id> --token <symbol> --budget <amount> --currency <SOL|USDC|USDT>
+# Example: paw buy --agent-id bot --token BONK --budget 0.2 --max-slippage 10
+
+# 🆕 Intent-based sell (with percentage support!)
+paw sell --agent-id <agent-id> --token <symbol> --amount <amount|percentage> --currency <SOL|USDC|USDT>
+# Example: paw sell --agent-id bot --token BONK --amount 50% --currency SOL
+
+# 🆕 Dry run mode (test without executing)
+paw buy --agent-id <agent-id> --token BONK --budget 0.2 --dry-run
+paw sell --agent-id <agent-id> --token BONK --amount 50% --dry-run
+
 # View transaction history
 paw history <agent-id>
 
@@ -71,7 +102,43 @@ paw config <agent-id> --show
 
 ## AI Agent Workflow Examples
 
-### Example 1: Check Balance Before Action
+### Example 1: Safe Trading with Guardrails, Events, and Real-Time Monitoring (NEW!)
+
+```bash
+# Enable guardrails for safety (micro profile for $100 wallet)
+paw guardrails trading-bot-001 --enable --profile micro
+
+# Enable webhook events
+paw events trading-bot-001 --subscribe --format webhook --url http://localhost:3000/webhook
+
+# Start real-time balance monitoring (in background)
+paw monitor trading-bot-001 &
+
+# Now your agent receives webhooks for:
+# - Transactions executed by PAW (buy/sell/send)
+# - Balance changes from external sources (someone sends you SOL)
+# - Guardrail blocks
+# - Errors
+
+# Check limits
+paw guardrails trading-bot-001 --show
+# Shows: 0.1 SOL/tx, 0.5 SOL/hour, 2 SOL/day
+
+# Try to buy within limits
+paw buy --agent-id trading-bot-001 --token BONK --budget 0.05
+# ✅ Allowed (under 0.1 SOL limit)
+# Webhook fired: transaction_executed
+
+# Try to buy over limits
+paw buy --agent-id trading-bot-001 --token BONK --budget 0.2
+# ❌ Blocked by guardrails!
+# Webhook fired: guardrail_blocked
+
+# Someone sends you SOL
+# Webhook fired: balance_changed (detected by monitor)
+```
+
+### Example 2: Check Balance Before Action
 
 ```bash
 # Get balance
@@ -83,7 +150,47 @@ paw balance trading-bot-001
 #    ~138.68 USD
 ```
 
-### Example 2: Fast Token Swap
+### Example 2: Intent-Based Buy (NEW!)
+
+```bash
+# Buy BONK with 0.2 SOL budget
+paw buy --agent-id trading-bot-001 --token BONK --budget 0.2 --max-slippage 10
+
+# Output shows execution plan:
+# ✨ Intent Summary:
+# Intent:          Buy BONK
+# Budget:          0.2 SOL
+# Max Slippage:    10%
+# 
+# 📈 Quote:
+# Expected Output: 58329.000000 BONK
+# Worst Case:      52496.100000 BONK (after 10% slippage)
+# Price Impact:    4.8%
+# Confidence:      95%
+#
+# 📋 Execution Plan:
+# 1. Approve SOL spend
+# 2. Execute Jupiter swap
+# 3. Confirm on Solana
+
+# Test strategy first with dry run
+paw buy --agent-id trading-bot-001 --token BONK --budget 0.2 --dry-run
+```
+
+### Example 3: Intent-Based Sell (NEW!)
+
+```bash
+# Sell 50% of BONK holdings
+paw sell --agent-id trading-bot-001 --token BONK --amount 50% --currency SOL
+
+# Sell exact amount
+paw sell --agent-id trading-bot-001 --token BONK --amount 1000 --currency USDC
+
+# Test before executing
+paw sell --agent-id trading-bot-001 --token BONK --amount 50% --dry-run
+```
+
+### Example 4: Fast Token Swap (Classic Method)
 
 ```bash
 # Swap exact amount: 0.1 SOL to USDC
@@ -98,7 +205,7 @@ paw swap trading-bot-001 --from BONK --to USDC --amount 100% --network mainnet-b
 # Executes in <2 seconds using Jupiter aggregator
 ```
 
-### Example 3: Send Payment
+### Example 5: Send Payment
 
 ```bash
 # Send 0.5 SOL to another agent
@@ -111,7 +218,7 @@ paw send agent-alice --to DJcVfT6dienfSbudJzZ82WN4EkVPgVaT18oBK971Yi2c --amount 
 paw send agent-alice --to <address> --amount 0.5
 ```
 
-### Example 4: Monitor Transactions
+### Example 6: Monitor Transactions
 
 ```bash
 # Check last 10 transactions
@@ -125,7 +232,7 @@ paw history trading-bot-001 --limit 10
 # - Timestamp
 ```
 
-### Example 5: Multi-Agent Setup
+### Example 7: Multi-Agent Setup
 
 ```bash
 # Create multiple agents
@@ -141,7 +248,7 @@ paw init trading-bot-001
 
 ```bash
 #!/bin/bash
-# Autonomous trading agent
+# Autonomous trading agent with intent-based commands
 
 AGENT="trading-bot-001"
 
@@ -152,10 +259,21 @@ BALANCE=$(paw balance $AGENT)
 HISTORY=$(paw history $AGENT --limit 5)
 
 # 3. Make decision based on balance
-# If balance > 1 SOL, swap some to USDC
-paw swap $AGENT --from SOL --to USDC --amount 0.5
+# If balance > 1 SOL, buy some BONK
 
-# 4. Verify transaction
+# Test strategy first (dry run)
+paw buy --agent-id $AGENT --token BONK --budget 0.5 --max-slippage 10 --dry-run
+
+# Execute if dry run looks good
+paw buy --agent-id $AGENT --token BONK --budget 0.5 --max-slippage 10
+
+# 4. Monitor position
+paw tokens $AGENT
+
+# 5. Take profit when ready (sell 50%)
+paw sell --agent-id $AGENT --token BONK --amount 50% --currency SOL
+
+# 6. Verify transaction
 paw history $AGENT --limit 1
 ```
 
@@ -279,9 +397,28 @@ paw history my-first-agent
 
 ## Meme Trading Capabilities
 
-PAW is built for fast, autonomous meme coin trading:
+PAW is built for fast, autonomous meme coin trading with intent-based commands:
 
-### Quick Meme Trading Commands
+### Quick Meme Trading Commands (Intent-Based - RECOMMENDED)
+
+```bash
+# Buy meme coin with budget and max slippage
+paw buy --agent-id bot --token BONK --budget 0.5 --max-slippage 10
+
+# Test buy first (dry run)
+paw buy --agent-id bot --token BONK --budget 0.5 --max-slippage 10 --dry-run
+
+# Sell 100% of meme coin (exit position)
+paw sell --agent-id bot --token BONK --amount 100% --currency SOL --max-slippage 10
+
+# Take 50% profit (sell half)
+paw sell --agent-id bot --token BONK --amount 50% --currency USDC --max-slippage 10
+
+# Buy with USDC instead of SOL
+paw buy --agent-id bot --token WIF --budget 10 --currency USDC --max-slippage 15
+```
+
+### Classic Swap Commands (Still Supported)
 
 ```bash
 # Buy meme coin with custom slippage
@@ -300,6 +437,13 @@ paw swap bot --from SOL --to BONK --amount 0.5 --slippage 500
 ### Slippage Settings for Meme Coins
 
 ```bash
+# Intent-based commands use percentage (easier!)
+--max-slippage 5      # 5% - Normal meme trading
+--max-slippage 10     # 10% - High volatility
+--max-slippage 15     # 15% - Very high volatility
+--max-slippage 20     # 20% - New launches
+
+# Classic swap commands use basis points
 --slippage 50     # 0.5% - Stable tokens
 --slippage 100    # 1% - Normal trading
 --slippage 500    # 5% - Meme coins (volatile)
@@ -316,43 +460,55 @@ paw swap bot --from SOL --to BONK --amount 0.5 --slippage 500
 --priority-fee 500000   # Ultra fast (competitive sniping)
 ```
 
-### Example: Sniper Bot
+### Example: Sniper Bot (Intent-Based)
 
 ```bash
 #!/bin/bash
-# Snipe new token launch
+# Snipe new token launch with intent commands
 
 AGENT="sniper-bot"
-TARGET="<NEW_MEME_MINT>"
+TARGET="BONK"  # Or any token symbol/mint
 
-# Fast execution with high priority
-paw swap $AGENT \
-  --from SOL \
-  --to $TARGET \
-  --amount 0.5 \
-  --slippage 2000 \
-  --priority-fee 500000
+# Test strategy first
+paw buy --agent-id $AGENT \
+  --token $TARGET \
+  --budget 0.5 \
+  --max-slippage 20 \
+  --dry-run
+
+# Execute if dry run looks good
+paw buy --agent-id $AGENT \
+  --token $TARGET \
+  --budget 0.5 \
+  --max-slippage 20 \
+  --optimize-for fastest
 
 # Verify purchase
 paw tokens $AGENT | grep $TARGET
 ```
 
-### Example: Take Profit Bot
+### Example: Take Profit Bot (Intent-Based)
 
 ```bash
 #!/bin/bash
 # Sell when target hit
 
 AGENT="profit-bot"
-MEME="<MEME_MINT>"
+MEME="BONK"
 
 # Sell 50% of holdings
-paw swap $AGENT \
-  --from $MEME \
-  --to SOL \
-  --amount 500000 \
-  --slippage 1000 \
-  --priority-fee 100000
+paw sell --agent-id $AGENT \
+  --token $MEME \
+  --amount 50% \
+  --currency SOL \
+  --max-slippage 10
+
+# Or sell all (100%)
+paw sell --agent-id $AGENT \
+  --token $MEME \
+  --amount 100% \
+  --currency SOL \
+  --max-slippage 10
 ```
 
 ### Popular Meme Coins
@@ -411,12 +567,478 @@ PAW provides clear error messages:
 
 ## Tips for AI Agents
 
-1. **Always check balance before transactions**
-2. **Use --network flag to override config when needed**
-3. **Monitor transaction history to verify operations**
-4. **Start on devnet for testing, move to mainnet when ready**
-5. **Use tokens command to see all assets**
-6. **Set network in config to avoid repeating --network flag**
+1. **Use guardrails to protect from draining wallet (enable with --profile micro for small wallets)**
+2. **Enable webhook events for real-time notifications (paw events <agent-id> --subscribe --format webhook --url <url>)**
+3. **Use monitor command to detect incoming payments instantly (paw monitor <agent-id>)**
+4. **Use intent-based commands (buy/sell) for easier automation**
+5. **Always test with --dry-run before executing real trades**
+6. **Check balance before transactions**
+7. **Use --network flag to override config when needed**
+8. **Monitor transaction history to verify operations**
+9. **Start on devnet for testing, move to mainnet when ready**
+10. **Use tokens command to see all assets**
+11. **Set network in config to avoid repeating --network flag**
+12. **Intent commands show confidence scores - use them for decision making**
+13. **Percentage-based selling (50%, 100%) is easier than calculating exact amounts**
+14. **Check guardrails spending with --show to see remaining limits**
+15. **Run monitor in background for real-time balance change detection**
+16. **Webhook events enable true event-driven agent workflows**
+
+## Guardrails (Spending Limits)
+
+### Risk Profiles
+
+```bash
+# Micro - Perfect for $100 wallets
+paw guardrails bot --enable --profile micro
+# Limits: 0.1 SOL/tx, 0.5 SOL/hour, 2 SOL/day
+
+# Conservative - Cautious trading
+paw guardrails bot --enable --profile conservative
+# Limits: 0.5 SOL/tx, 2 SOL/hour, 10 SOL/day
+
+# Moderate - Balanced (default)
+paw guardrails bot --enable --profile moderate
+# Limits: 2 SOL/tx, 10 SOL/hour, 50 SOL/day
+
+# Degen - Meme coin trading
+paw guardrails bot --enable --profile degen
+# Limits: 10 SOL/tx, 50 SOL/hour, 200 SOL/day
+
+# Whale - Big money
+paw guardrails bot --enable --profile whale
+# Limits: 100 SOL/tx, 500 SOL/hour, 2000 SOL/day
+```
+
+### Custom Limits
+
+```bash
+# Set custom limits
+paw guardrails bot --enable --per-tx 0.5 --per-hour 2 --per-day 10
+
+# Set approval threshold
+paw guardrails bot --enable --approval-threshold 0.3
+# Transactions above 0.3 SOL require approval
+
+# Reserve SOL for gas
+paw guardrails bot --enable --reserve-gas 0.001
+```
+
+### Managing Guardrails
+
+```bash
+# Check status and spending
+paw guardrails bot --show
+
+# Disable all limits
+paw guardrails bot --disable
+
+# Re-enable with different profile
+paw guardrails bot --enable --profile degen
+```
+
+### Why Use Guardrails?
+
+- **Protect from bugs** - Buggy agent code can't drain wallet
+- **Test safely** - Try new strategies with limited risk
+- **Prevent exploits** - Even if attacker gets access, damage is limited
+- **Daily budgets** - Set spending limits for trading bots
+- **Peace of mind** - Sleep well knowing wallet is protected
+
+### Guardrails in Action
+
+```bash
+#!/bin/bash
+# Safe trading bot with guardrails
+
+AGENT="safe-bot"
+
+# Enable micro profile (0.1 SOL/tx limit)
+paw guardrails $AGENT --enable --profile micro
+
+# Try to buy 0.05 SOL of BONK (allowed)
+paw buy --agent-id $AGENT --token BONK --budget 0.05
+# ✅ Transaction allowed
+
+# Try to buy 0.2 SOL of BONK (blocked)
+paw buy --agent-id $AGENT --token BONK --budget 0.2
+# ❌ Blocked: Exceeds per-transaction limit
+
+# Check spending
+paw guardrails $AGENT --show
+# Shows: 0.05 SOL spent, 0.45 SOL remaining this hour
+```
+
+## Event Logging (Visibility & Webhooks)
+
+### File-Based Event Logging
+
+```bash
+# Enable logging for an agent
+paw events bot --subscribe
+
+# Custom log path
+paw events bot --subscribe --path ./my-events.log
+
+# Filter specific events
+paw events bot --subscribe --events transaction_executed,error_occurred
+```
+
+### Webhook Events (Real-Time HTTP Notifications)
+
+```bash
+# Enable webhooks (agent receives HTTP POST for each event)
+paw events bot --subscribe --format webhook --url https://myagent.com/webhook
+
+# With custom retry and timeout
+paw events bot --subscribe \
+  --format webhook \
+  --url http://localhost:3000/webhook \
+  --retry 3 \
+  --timeout 5000
+
+# Filter specific events
+paw events bot --subscribe \
+  --format webhook \
+  --url https://myagent.com/webhook \
+  --events transaction_executed,error_occurred
+```
+
+### Webhook Payload
+
+When an event occurs, PAW sends an HTTP POST to your webhook URL:
+
+```http
+POST https://myagent.com/webhook
+Content-Type: application/json
+
+{
+  "event_id": "evt_1772375916023_6c44e214",
+  "timestamp": "2026-03-01T14:38:36.023Z",
+  "agent_id": "agent-alice",
+  "type": "transaction_executed",
+  "severity": "info",
+  "message": "Send completed: 0.001 SOL to 9aQGpyZHw4L8YzQGvRA3cVqJz5FvPPdRzFvXYbqzKvXx",
+  "payload": {
+    "type": "send",
+    "to": "9aQGpyZHw4L8YzQGvRA3cVqJz5FvPPdRzFvXYbqzKvXx",
+    "amount": 0.001,
+    "token": "SOL",
+    "signature": "3qRXxpA7C8reodAigk2BnspQQGdFARs3Zt67JHXc9HH1BVpmjaiLBEsiQHmXye9fuREDVX2NkEKgeLTACUkppBUP",
+    "explorer": "https://explorer.solana.com/tx/..."
+  }
+}
+```
+
+### Copy-Paste Webhook Server (Node.js)
+
+Save this as `paw-webhook.js` and run with `node paw-webhook.js`:
+
+```javascript
+#!/usr/bin/env node
+/**
+ * 📟 PAW Webhook Server
+ * 
+ * Copy-paste ready webhook server for receiving PAW events.
+ * Perfect for AI agents, Discord bots, monitoring dashboards, etc.
+ * 
+ * Setup:
+ *   1. npm install express
+ *   2. node paw-webhook.js
+ *   3. paw events <agent-id> --subscribe --format webhook --url http://localhost:3000/webhook
+ * 
+ * Customize the handleEvent() function for your use case!
+ */
+
+const express = require('express');
+const app = express();
+const PORT = process.env.PORT || 3000;
+
+app.use(express.json());
+
+// 🎯 Customize this function for your agent's logic
+function handleEvent(event) {
+  console.log('\n' + '='.repeat(60));
+  console.log('📟 PAW Event Received');
+  console.log('='.repeat(60));
+  console.log('Event ID:  ', event.event_id);
+  console.log('Agent:     ', event.agent_id);
+  console.log('Type:      ', event.type);
+  console.log('Severity:  ', event.severity);
+  console.log('Message:   ', event.message);
+  console.log('Timestamp: ', new Date(event.timestamp).toLocaleString());
+  
+  // Handle different event types
+  switch (event.type) {
+    case 'transaction_executed':
+      console.log('\n✅ Transaction Success!');
+      console.log('Signature: ', event.payload.signature);
+      console.log('Explorer:  ', event.payload.explorer);
+      // TODO: Post to Discord, update database, notify user, etc.
+      break;
+      
+    case 'transaction_failed':
+      console.log('\n❌ Transaction Failed!');
+      console.log('Reason:    ', event.message);
+      // TODO: Send alert, retry logic, log error, etc.
+      break;
+      
+    case 'guardrail_blocked':
+      console.log('\n🛡️  Transaction Blocked by Guardrails');
+      console.log('Reason:    ', event.message);
+      // TODO: Log security event, notify admin, etc.
+      break;
+      
+    case 'error_occurred':
+      console.log('\n⚠️  Error Occurred');
+      console.log('Error:     ', event.message);
+      // TODO: Send alert, log error, trigger recovery, etc.
+      break;
+      
+    default:
+      console.log('\nPayload:', JSON.stringify(event.payload, null, 2));
+  }
+  
+  console.log('='.repeat(60) + '\n');
+}
+
+// Webhook endpoint
+app.post('/webhook', (req, res) => {
+  try {
+    const event = req.body;
+    
+    // Validate event structure
+    if (!event.event_id || !event.type || !event.agent_id) {
+      return res.status(400).json({ 
+        error: 'Invalid event structure' 
+      });
+    }
+    
+    // Respond immediately (PAW will retry if no 200)
+    res.status(200).json({ 
+      received: true, 
+      event_id: event.event_id,
+      timestamp: new Date().toISOString()
+    });
+    
+    // Process event asynchronously
+    setImmediate(() => {
+      try {
+        handleEvent(event);
+      } catch (error) {
+        console.error('Error handling event:', error);
+      }
+    });
+    
+  } catch (error) {
+    console.error('Webhook error:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+// Health check endpoint
+app.get('/health', (req, res) => {
+  res.json({ 
+    status: 'ok', 
+    service: 'PAW Webhook Server',
+    uptime: process.uptime(),
+    timestamp: new Date().toISOString()
+  });
+});
+
+// Start server
+app.listen(PORT, () => {
+  console.log('\n📟 PAW Webhook Server');
+  console.log('='.repeat(60));
+  console.log('Status:    Running');
+  console.log('Port:      ' + PORT);
+  console.log('Webhook:   http://localhost:' + PORT + '/webhook');
+  console.log('Health:    http://localhost:' + PORT + '/health');
+  console.log('='.repeat(60));
+  console.log('\nConfigure PAW with:');
+  console.log('  paw events <agent-id> --subscribe --format webhook --url http://localhost:' + PORT + '/webhook');
+  console.log('\nWaiting for events...\n');
+});
+
+// Graceful shutdown
+process.on('SIGINT', () => {
+  console.log('\n\n📟 Shutting down PAW webhook server...');
+  process.exit(0);
+});
+```
+
+**Quick Start:**
+```bash
+# 1. Install express
+npm install express
+
+# 2. Save the code above as paw-webhook.js
+
+# 3. Start the server
+node paw-webhook.js
+
+# 4. Configure PAW (in another terminal)
+paw events my-agent --subscribe --format webhook --url http://localhost:3000/webhook
+
+# 5. Test it!
+paw send --agent-id my-agent --to <address> --amount 0.01
+```
+
+### Test Webhook Server
+
+PAW includes a test webhook server for development:
+
+```bash
+# Start test server
+node examples/test-webhook-server.js
+
+# Configure PAW to use it
+paw events bot --subscribe --format webhook --url http://localhost:3000/webhook
+
+# Execute transaction to test
+paw send --agent-id bot --to <address> --amount 0.01
+
+# Check server output - you'll see the webhook event!
+```
+
+### Real-Time Balance Monitoring
+
+Monitor your wallet for balance changes in real-time using Helius WebSocket:
+
+```bash
+# Enable webhooks first
+paw events bot --subscribe --format webhook --url http://localhost:3000/webhook
+
+# Start monitoring (keeps running in background)
+paw monitor bot
+
+# Now you'll receive webhooks for:
+# - Balance changes from external sources (someone sends you SOL)
+# - All transaction events (buy/sell/send)
+# - Guardrail blocks and errors
+```
+
+**How it works:**
+- Opens WebSocket connection to Helius
+- Subscribes to account changes for your wallet
+- Fires `balance_changed` webhook when balance updates
+- Auto-reconnects if connection drops
+- Works best on mainnet-beta (devnet WebSocket can be unreliable)
+
+**Use cases:**
+- Detect incoming payments instantly
+- Monitor wallet activity in real-time
+- Build event-driven workflows
+- Automated responses to deposits
+
+**Example: Payment Detection Bot**
+```bash
+# Terminal 1: Start webhook server
+node paw-webhook.js
+
+# Terminal 2: Start monitoring
+paw events payment-bot --subscribe --format webhook --url http://localhost:3000/webhook
+paw monitor payment-bot
+
+# Your webhook receives balance_changed events instantly when:
+# - Customer sends payment
+# - Refund is received
+# - Any external transaction affects your balance
+```
+
+### View Events
+
+```bash
+# Show recent events (last 20)
+paw events bot --show
+
+# Show more events
+paw events bot --show --limit 100
+
+# Check subscription status
+paw events bot
+```
+
+### Real-Time Monitoring
+
+```bash
+# Tail the log file (in separate terminal)
+tail -f ~/.paw/events/bot.log
+
+# Parse with jq
+cat ~/.paw/events/bot.log | jq '.type'
+cat ~/.paw/events/bot.log | jq 'select(.severity=="error")'
+```
+
+### Event Types
+
+- `transaction_executed` - Buy/sell/send completed successfully
+- `transaction_failed` - Transaction failed to execute
+- `balance_changed` - Balance updated (external deposits/withdrawals detected by monitor)
+- `guardrail_blocked` - Transaction blocked by spending limits
+- `guardrail_approved` - Transaction requires manual approval
+- `error_occurred` - Error during operation
+- `wallet_created` - New wallet initialized
+- `config_updated` - Configuration changed
+
+### Event Structure
+
+```json
+{
+  "event_id": "evt_1772369761718_0c0bf2fa",
+  "timestamp": "2026-03-01T12:56:01.718Z",
+  "agent_id": "agent-alice",
+  "type": "transaction_executed",
+  "severity": "info",
+  "message": "Send completed: 0.01 SOL to ...",
+  "payload": {
+    "type": "send",
+    "to": "...",
+    "amount": 0.01,
+    "signature": "...",
+    "explorer": "..."
+  }
+}
+```
+
+### Why Use Event Logging?
+
+- **Real-time monitoring** - See what's happening as it happens
+- **Webhooks for agents** - Receive HTTP POST notifications for event-driven workflows
+- **Balance change detection** - Know instantly when you receive payments (with monitor)
+- **Debugging** - Track down errors and failures
+- **Auditing** - Keep records of all transactions
+- **Automation** - Build event-driven workflows (webhooks make this easy!)
+- **Compliance** - Maintain transaction logs
+
+### Event Logging in Action
+
+```bash
+#!/bin/bash
+# Monitored trading bot with event logging and real-time balance monitoring
+
+AGENT="monitored-bot"
+
+# Enable webhook events
+paw events $AGENT --subscribe --format webhook --url http://localhost:3000/webhook
+
+# Enable guardrails
+paw guardrails $AGENT --enable --profile micro
+
+# Start real-time balance monitoring in background
+paw monitor $AGENT &
+MONITOR_PID=$!
+
+# Execute trades
+paw buy --agent-id $AGENT --token BONK --budget 0.05
+
+# Your webhook receives:
+# 1. transaction_executed (from buy command)
+# 2. balance_changed (when BONK arrives in wallet)
+
+# Stop monitoring when done
+kill $MONITOR_PID
+```
 
 ## File Locations
 
@@ -426,7 +1048,14 @@ PAW provides clear error messages:
 ~/.paw/agents/<agent-id>/passphrase.enc
 ~/.paw/agents/<agent-id>/config.json
 
-# All encrypted except config.json
+# Guardrails
+~/.paw/guardrails/<agent-id>.json
+
+# Event logs
+~/.paw/events/<agent-id>.log
+~/.paw/events/config.json
+
+# All encrypted except config files
 ```
 
 ---

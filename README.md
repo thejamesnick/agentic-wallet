@@ -53,6 +53,30 @@ We're launching on Solana because:
 
 ## Key Features
 
+### 🛡️ Guardrails & Safety (NEW!)
+- **Risk Profiles**: Micro, Conservative, Moderate, Degen, Whale
+- **Spending Limits**: Per-transaction, per-hour, per-day caps
+- **Real-Time Tracking**: Monitor spending and remaining limits
+- **Easy On/Off**: Enable/disable protection anytime
+- **Protects from Drainage**: Even attackers can't exceed your limits
+
+### 📊 Event Logging & Webhooks (NEW!)
+- **File-Based Logging**: JSON lines format for easy parsing
+- **Webhook Support**: Receive HTTP POST notifications for events
+- **Real-Time Monitoring**: Monitor wallet for balance changes via WebSocket
+- **Event Filtering**: Subscribe to specific event types
+- **Automatic Retry**: Reliable webhook delivery with exponential backoff
+- **Balance Change Detection**: Know instantly when you receive payments
+- **Perfect for Agents**: Build event-driven workflows easily
+
+### 🤖 Intent-Based Commands
+- **Agent-Friendly Interface**: High-level buy/sell commands
+- **Smart Quoting**: Automatic price impact and confidence calculation
+- **Dry Run Mode**: Test strategies without executing
+- **Percentage Support**: Sell 50% of holdings with ease
+- **Optimization Strategies**: Choose between best_price, maximum_tokens, fastest
+- **Clear Execution Plans**: See exactly what will happen before it happens
+
 ### 🚀 Lightning-Fast Trading
 - **Helius RPC**: Premium endpoints for fastest execution
 - **<2 Second Swaps**: Fast enough to snipe meme launches
@@ -219,10 +243,19 @@ paw send my-trading-bot --to <recipient-address> --amount 0.5
 # 8. Swap tokens (fast execution with Jupiter)
 paw swap my-trading-bot --from SOL --to BONK --amount 0.5
 
-# 9. View transaction history
+# 9. Intent-based buy (NEW! Agent-friendly)
+paw buy --agent-id my-trading-bot --token BONK --budget 0.2 --currency SOL --max-slippage 10
+
+# 10. Intent-based sell (NEW! Agent-friendly)
+paw sell --agent-id my-trading-bot --token BONK --amount 50% --currency SOL --max-slippage 10
+
+# 11. Dry run mode (test without executing)
+paw buy --agent-id my-trading-bot --token BONK --budget 0.2 --dry-run
+
+# 12. View transaction history
 paw history my-trading-bot
 
-# 10. Launch interactive dashboard
+# 13. Launch interactive dashboard
 paw dashboard my-trading-bot
 ```
 
@@ -243,8 +276,17 @@ exec('paw balance trading-bot-001', (err, stdout) => {
   //    ~138.68 USD
 });
 
-// Execute meme coin trade with high slippage
-exec('paw swap trading-bot-001 --from SOL --to BONK --amount 0.5 --slippage 1000 --priority-fee 100000');
+// Intent-based buy (agent-friendly!)
+exec('paw buy --agent-id trading-bot-001 --token BONK --budget 0.5 --currency SOL --max-slippage 10');
+
+// Intent-based sell with percentage
+exec('paw sell --agent-id trading-bot-001 --token BONK --amount 50% --currency SOL');
+
+// Dry run to test strategy
+exec('paw buy --agent-id trading-bot-001 --token WIF --budget 0.2 --dry-run', (err, stdout) => {
+  console.log(stdout);
+  // Shows quote and execution plan without executing
+});
 ```
 
 ### Programmatic Usage (TypeScript/Node.js)

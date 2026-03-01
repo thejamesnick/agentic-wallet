@@ -1,0 +1,149 @@
+PAW 2.0 - Agentic Wallet Features
+Roadmap from Simple → Hard
+
+=== PHASE 1: FOUNDATION (Simple) ===
+
+1. Intent-Based Buy Command ⭐ EASIEST ✅ SHIPPED v1.1.0
+   - Add: paw buy --token BONK --budget 0.2 --currency USDC
+   - Returns quote with expected output, slippage, price impact
+   - Wraps existing swap logic with smarter interface
+   - Difficulty: 🟢 Easy (2-3 days)
+   - Why start here: Uses existing swap infrastructure, just better UX
+
+2. Intent-Based Sell Command ⭐ EASIEST ✅ SHIPPED v1.1.0
+   - Add: paw sell --token BONK --amount 1000 --currency USDC
+   - Converts token → USDC/SOL with optimization
+   - Difficulty: 🟢 Easy (2-3 days)
+   - Why: Same as buy, just reverse direction
+
+3. Dry Run Mode ⭐ EASIEST ✅ SHIPPED v1.1.0
+   - Add --dry-run flag to all commands
+   - Simulates transaction without executing
+   - Shows quote, gas, expected output
+   - Difficulty: 🟢 Easy (1-2 days)
+   - Why: No new infrastructure, just skip execution step
+
+4. Session-Based Authentication 🟡 MEDIUM ⏸️ SKIPPED (Not needed - autoload already works!)
+   - Current system already autonomous (no passphrase prompts)
+   - loadKeypairAuto() uses machine-specific encrypted passphrase
+   - Only needed for REST API or multi-machine deployments
+   - Performance: 50-100ms overhead (negligible vs network calls)
+   - Decision: Skip for now, revisit when building REST API
+
+5. Basic Guardrails Config 🟡 MEDIUM ✅ SHIPPED v1.2.0
+   - Add: paw guardrails <agent-id> --enable --profile micro
+   - Store in ~/.paw/guardrails/<agent-id>.json
+   - Check limits before executing any transaction
+   - Risk profiles: micro, conservative, moderate, degen, whale
+   - Difficulty: 🟡 Medium (3-4 days)
+   - Why: Config management + validation logic
+
+=== PHASE 2: AUTOMATION (Medium) ===
+
+6. REST API Server 🔴 HARD
+   - Add: paw serve --port 3000
+   - Endpoints: POST /intents/buy, /intents/sell, GET /portfolio
+   - Session token auth via headers
+   - Difficulty: 🔴 Hard (7-10 days)
+   - Why: New HTTP server, routing, middleware, error handling
+
+7. Event Logging (File-Based) 🟡 MEDIUM ✅ SHIPPED v1.3.0
+   - Add: paw events <agent-id> --subscribe --format file --path ./events.log
+   - Log all transactions, balance changes, errors
+   - JSON lines format for easy parsing
+   - Difficulty: 🟡 Medium (3-4 days)
+   - Why: Simple file append, no complex streaming yet
+
+8. Basic Strategy Engine 🔴 HARD
+   - Add: paw strategy create --token BONK --budget 0.2 --take-profit 2x --stop-loss 0.5x
+   - Background daemon monitors price, executes exits
+   - Store strategies in ~/.paw/strategies/
+   - Difficulty: 🔴 Hard (10-14 days)
+   - Why: Background process, price monitoring, condition evaluation
+
+9. Strategy Management Commands 🟡 MEDIUM
+   - Add: paw strategy list/status/pause/resume/cancel
+   - Query and control active strategies
+   - Difficulty: 🟡 Medium (3-4 days)
+   - Why: CRUD operations on strategy state
+
+=== PHASE 3: INTELLIGENCE (Hard) ===
+
+10. WebSocket Event Stream 🔴 HARD
+    - Add: paw events --subscribe --format ws
+    - Real-time push notifications to agents
+    - Difficulty: 🔴 Hard (7-10 days)
+    - Why: WebSocket server, connection management, broadcasting
+
+11. Webhook Event Delivery 🟡 MEDIUM
+    - Add: paw events --subscribe --format webhook --url https://...
+    - POST events to agent's HTTP endpoint
+    - Retry logic for failed deliveries
+    - Difficulty: 🟡 Medium (4-5 days)
+    - Why: HTTP client + retry queue
+
+12. Smart Execution Engine 🔴 VERY HARD
+    - Auto-speedup stalled transactions
+    - Retry with exponential backoff
+    - MEV protection via Jito bundles
+    - Difficulty: 🔴 Very Hard (14-21 days)
+    - Why: Complex transaction lifecycle management
+
+13. Portfolio Rebalancing Strategy 🔴 VERY HARD
+    - Add: paw strategy create --type rebalance --targets "SOL:50,USDC:30,memes:20"
+    - Automatically buy/sell to maintain target allocation
+    - Difficulty: 🔴 Very Hard (14-21 days)
+    - Why: Multi-token coordination, optimization algorithms
+
+14. DCA (Dollar Cost Average) Strategy 🟡 MEDIUM
+    - Add: paw strategy create --repeat weekly --buy SOL --budget 10
+    - Scheduled recurring purchases
+    - Difficulty: 🟡 Medium (5-7 days)
+    - Why: Cron-like scheduling + execution
+
+=== RECOMMENDED SHIPPING ORDER ===
+
+Week 1-2: Features 1, 2, 3 (Intent commands + dry run)
+Week 3-4: Feature 4 (Session auth)
+Week 5: Feature 5 (Guardrails)
+Week 6-7: Feature 7 (Event logging)
+Week 8-10: Feature 6 (REST API)
+Week 11-13: Feature 8, 9 (Basic strategy engine)
+Week 14+: Advanced features (10-14)
+
+=== MINIMUM VIABLE AUTONOMOUS WALLET (MVP) ===
+
+To have a SOLID autonomous wallet, ship these 3 core features:
+(Session auth removed - already autonomous!)
+
+✅ MUST SHIP:
+1. Intent Buy/Sell (#1, #2) - High-level commands agents understand ✅ SHIPPED v1.1.0
+2. Guardrails (#5) - Spending limits for safety ✅ SHIPPED v1.2.0
+3. Event Logging (#7) - Agents need to know what happened ✅ SHIPPED v1.3.0
+4. Basic Strategy Engine (#8) - Set and forget (take-profit/stop-loss) 👈 NEXT
+
+🎯 SHIPPING ORDER (MVP):
+Week 1-2: #1, #2 (Buy/sell intents) - Foundation ✅ DONE
+Week 3-4: #5 (Guardrails) - Safety first ✅ DONE
+Week 5: #7 (Event logging) - Visibility ✅ DONE
+Week 6-8: #8 (Strategy engine) - True autonomy 👈 NEXT
+
+Ship these 4 = Legit autonomous wallet ✨
+
+3 out of 4 MVP features complete! 🎉
+
+OPTIONAL (Nice to have but not required):
+- #3 Dry run - Testing
+- #6 REST API - Better integration
+- #10 WebSocket - Real-time events
+- #12 Smart execution - Optimization
+
+=== WHAT TO SHIP TODAY? ===
+
+Start with #1: Intent-Based Buy Command
+- Easiest to implement
+- Immediate value for agents
+- Foundation for everything else
+- Can ship in 2-3 days
+
+Next: #2 (Sell) → #4 (Sessions) → #5 (Guardrails) → #7 (Events) → #8 (Strategy)
