@@ -4,7 +4,7 @@ All notable changes to PAW (PocketAgent Wallet) will be documented in this file.
 
 ## [1.4.0] - 2026-03-01
 
-### Added - Webhook Events (Real-Time HTTP Notifications)
+### Added - Webhook Events & Real-Time Balance Monitoring
 
 #### 🔔 Webhook Support
 - **HTTP POST Notifications** - Receive events via webhooks instead of file logging
@@ -12,6 +12,14 @@ All notable changes to PAW (PocketAgent Wallet) will be documented in this file.
   - PAW sends HTTP POST to your endpoint for each event
   - Perfect for event-driven agent workflows
   - Example: `paw events bot --subscribe --format webhook --url https://myagent.com/webhook`
+
+#### 📡 Real-Time Balance Monitoring (NEW!)
+- **`paw monitor`** - Monitor wallet for balance changes in real-time
+  - Uses Helius WebSocket for instant notifications
+  - Detects external balance changes (incoming payments)
+  - Fires `balance_changed` webhook events
+  - Auto-reconnects if connection drops
+  - Example: `paw monitor bot`
 
 #### ✨ Features
 - **Automatic Retry Logic** - Reliable delivery with exponential backoff
@@ -29,6 +37,12 @@ All notable changes to PAW (PocketAgent Wallet) will be documented in this file.
   - Content-Type: application/json
   - User-Agent: PAW-Wallet/1.4.0
   - Clean JSON payload with all event details
+
+- **Balance Change Detection** - Know instantly when you receive payments
+  - WebSocket connection to Helius
+  - Real-time account monitoring
+  - Fires webhook with balance change details
+  - Works best on mainnet-beta
 
 #### 📡 Webhook Payload
 ```json
@@ -58,8 +72,9 @@ All notable changes to PAW (PocketAgent Wallet) will be documented in this file.
   - Usage: `node examples/test-webhook-server.js`
 
 #### 🎯 Why This Matters
-Webhooks enable true event-driven agent workflows. Instead of polling or tailing log files, agents receive instant HTTP notifications when wallet events occur. This is perfect for:
+Webhooks + real-time monitoring enable true event-driven agent workflows. Instead of polling or tailing log files, agents receive instant HTTP notifications when wallet events occur. This is perfect for:
 - **OpenClaw and AI agents** - Receive notifications in your agent's HTTP server
+- **Payment detection** - Know instantly when customers send payments
 - **Discord/Telegram bots** - Post transaction updates to chat
 - **Monitoring dashboards** - Real-time wallet activity displays
 - **Automated responses** - Trigger actions based on wallet events
@@ -70,6 +85,7 @@ Webhooks enable true event-driven agent workflows. Instead of polling or tailing
 - Agent receives error webhook → Sends alert: "⚠️ Transaction failed"
 - Agent receives guardrail block → Logs security event
 - Agent receives transaction → Updates internal database
+- Agent receives balance_changed → Processes incoming payment instantly
 
 #### 📚 Documentation
 - Created comprehensive `WEBHOOK-SPEC.md` with implementation details
@@ -83,6 +99,9 @@ Webhooks enable true event-driven agent workflows. Instead of polling or tailing
 - Configurable timeout (default: 5000ms)
 - No blocking - failed webhooks don't stop event processing
 - Webhook config stored in `~/.paw/events/config.json`
+- Monitor uses Helius WebSocket (wss://mainnet.helius-rpc.com)
+- WebSocket auto-reconnects with exponential backoff
+- Balance monitoring requires ws package (included)
 
 ---
 

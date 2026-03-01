@@ -63,9 +63,10 @@ We're launching on Solana because:
 ### 📊 Event Logging & Webhooks (NEW!)
 - **File-Based Logging**: JSON lines format for easy parsing
 - **Webhook Support**: Receive HTTP POST notifications for events
-- **Real-Time Monitoring**: Tail log files or receive webhooks instantly
+- **Real-Time Monitoring**: Monitor wallet for balance changes via WebSocket
 - **Event Filtering**: Subscribe to specific event types
 - **Automatic Retry**: Reliable webhook delivery with exponential backoff
+- **Balance Change Detection**: Know instantly when you receive payments
 - **Perfect for Agents**: Build event-driven workflows easily
 
 ### 🤖 Intent-Based Commands

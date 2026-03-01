@@ -61,6 +61,10 @@ paw events <agent-id> --show --limit 50               # Show last 50 events
 paw events <agent-id> --unsubscribe                   # Disable logging
 paw events <agent-id> --clear                         # Clear event log
 
+# 🔔 Real-Time Balance Monitoring (NEW!)
+paw monitor <agent-id>                                # Monitor wallet for balance changes
+paw monitor <agent-id> --network mainnet-beta         # Monitor on specific network
+
 # Send SOL
 paw send <agent-id> --to <address> --amount <sol-amount>
 
@@ -98,14 +102,23 @@ paw config <agent-id> --show
 
 ## AI Agent Workflow Examples
 
-### Example 1: Safe Trading with Guardrails and Event Logging (NEW!)
+### Example 1: Safe Trading with Guardrails, Events, and Real-Time Monitoring (NEW!)
 
 ```bash
 # Enable guardrails for safety (micro profile for $100 wallet)
 paw guardrails trading-bot-001 --enable --profile micro
 
-# Enable event logging for visibility
-paw events trading-bot-001 --subscribe
+# Enable webhook events
+paw events trading-bot-001 --subscribe --format webhook --url http://localhost:3000/webhook
+
+# Start real-time balance monitoring (in background)
+paw monitor trading-bot-001 &
+
+# Now your agent receives webhooks for:
+# - Transactions executed by PAW (buy/sell/send)
+# - Balance changes from external sources (someone sends you SOL)
+# - Guardrail blocks
+# - Errors
 
 # Check limits
 paw guardrails trading-bot-001 --show
@@ -114,21 +127,15 @@ paw guardrails trading-bot-001 --show
 # Try to buy within limits
 paw buy --agent-id trading-bot-001 --token BONK --budget 0.05
 # ✅ Allowed (under 0.1 SOL limit)
-
-# Check events to see what happened
-paw events trading-bot-001 --show
-# Shows: transaction_executed event with details
+# Webhook fired: transaction_executed
 
 # Try to buy over limits
 paw buy --agent-id trading-bot-001 --token BONK --budget 0.2
 # ❌ Blocked by guardrails!
-# Event logged: guardrail_blocked
+# Webhook fired: guardrail_blocked
 
-# Tail events in real-time (in another terminal)
-tail -f ~/.paw/events/trading-bot-001.log
-
-# Disable guardrails when needed
-paw guardrails trading-bot-001 --disable
+# Someone sends you SOL
+# Webhook fired: balance_changed (detected by monitor)
 ```
 
 ### Example 2: Check Balance Before Action
@@ -561,20 +568,21 @@ PAW provides clear error messages:
 ## Tips for AI Agents
 
 1. **Use guardrails to protect from draining wallet (enable with --profile micro for small wallets)**
-2. **Enable event logging to track all operations (paw events <agent-id> --subscribe)**
-3. **Use intent-based commands (buy/sell) for easier automation**
-4. **Always test with --dry-run before executing real trades**
-5. **Check balance before transactions**
-6. **Use --network flag to override config when needed**
-7. **Monitor transaction history to verify operations**
-8. **Start on devnet for testing, move to mainnet when ready**
-9. **Use tokens command to see all assets**
-10. **Set network in config to avoid repeating --network flag**
-11. **Intent commands show confidence scores - use them for decision making**
-12. **Percentage-based selling (50%, 100%) is easier than calculating exact amounts**
-13. **Check guardrails spending with --show to see remaining limits**
-14. **Tail event log for real-time monitoring: tail -f ~/.paw/events/<agent-id>.log**
-15. **Parse event log with jq for automation: cat events.log | jq '.type'**
+2. **Enable webhook events for real-time notifications (paw events <agent-id> --subscribe --format webhook --url <url>)**
+3. **Use monitor command to detect incoming payments instantly (paw monitor <agent-id>)**
+4. **Use intent-based commands (buy/sell) for easier automation**
+5. **Always test with --dry-run before executing real trades**
+6. **Check balance before transactions**
+7. **Use --network flag to override config when needed**
+8. **Monitor transaction history to verify operations**
+9. **Start on devnet for testing, move to mainnet when ready**
+10. **Use tokens command to see all assets**
+11. **Set network in config to avoid repeating --network flag**
+12. **Intent commands show confidence scores - use them for decision making**
+13. **Percentage-based selling (50%, 100%) is easier than calculating exact amounts**
+14. **Check guardrails spending with --show to see remaining limits**
+15. **Run monitor in background for real-time balance change detection**
+16. **Webhook events enable true event-driven agent workflows**
 
 ## Guardrails (Spending Limits)
 
@@ -893,6 +901,51 @@ paw send --agent-id bot --to <address> --amount 0.01
 # Check server output - you'll see the webhook event!
 ```
 
+### Real-Time Balance Monitoring
+
+Monitor your wallet for balance changes in real-time using Helius WebSocket:
+
+```bash
+# Enable webhooks first
+paw events bot --subscribe --format webhook --url http://localhost:3000/webhook
+
+# Start monitoring (keeps running in background)
+paw monitor bot
+
+# Now you'll receive webhooks for:
+# - Balance changes from external sources (someone sends you SOL)
+# - All transaction events (buy/sell/send)
+# - Guardrail blocks and errors
+```
+
+**How it works:**
+- Opens WebSocket connection to Helius
+- Subscribes to account changes for your wallet
+- Fires `balance_changed` webhook when balance updates
+- Auto-reconnects if connection drops
+- Works best on mainnet-beta (devnet WebSocket can be unreliable)
+
+**Use cases:**
+- Detect incoming payments instantly
+- Monitor wallet activity in real-time
+- Build event-driven workflows
+- Automated responses to deposits
+
+**Example: Payment Detection Bot**
+```bash
+# Terminal 1: Start webhook server
+node paw-webhook.js
+
+# Terminal 2: Start monitoring
+paw events payment-bot --subscribe --format webhook --url http://localhost:3000/webhook
+paw monitor payment-bot
+
+# Your webhook receives balance_changed events instantly when:
+# - Customer sends payment
+# - Refund is received
+# - Any external transaction affects your balance
+```
+
 ### View Events
 
 ```bash
@@ -921,6 +974,7 @@ cat ~/.paw/events/bot.log | jq 'select(.severity=="error")'
 
 - `transaction_executed` - Buy/sell/send completed successfully
 - `transaction_failed` - Transaction failed to execute
+- `balance_changed` - Balance updated (external deposits/withdrawals detected by monitor)
 - `guardrail_blocked` - Transaction blocked by spending limits
 - `guardrail_approved` - Transaction requires manual approval
 - `error_occurred` - Error during operation
@@ -951,6 +1005,7 @@ cat ~/.paw/events/bot.log | jq 'select(.severity=="error")'
 
 - **Real-time monitoring** - See what's happening as it happens
 - **Webhooks for agents** - Receive HTTP POST notifications for event-driven workflows
+- **Balance change detection** - Know instantly when you receive payments (with monitor)
 - **Debugging** - Track down errors and failures
 - **Auditing** - Keep records of all transactions
 - **Automation** - Build event-driven workflows (webhooks make this easy!)
@@ -960,27 +1015,29 @@ cat ~/.paw/events/bot.log | jq 'select(.severity=="error")'
 
 ```bash
 #!/bin/bash
-# Monitored trading bot with event logging
+# Monitored trading bot with event logging and real-time balance monitoring
 
 AGENT="monitored-bot"
 
-# Enable event logging
-paw events $AGENT --subscribe
+# Enable webhook events
+paw events $AGENT --subscribe --format webhook --url http://localhost:3000/webhook
 
 # Enable guardrails
 paw guardrails $AGENT --enable --profile micro
 
-# Start monitoring in background
-tail -f ~/.paw/events/$AGENT.log &
+# Start real-time balance monitoring in background
+paw monitor $AGENT &
+MONITOR_PID=$!
 
 # Execute trades
 paw buy --agent-id $AGENT --token BONK --budget 0.05
 
-# Check events
-paw events $AGENT --show
+# Your webhook receives:
+# 1. transaction_executed (from buy command)
+# 2. balance_changed (when BONK arrives in wallet)
 
-# Parse errors
-cat ~/.paw/events/$AGENT.log | jq 'select(.severity=="error")'
+# Stop monitoring when done
+kill $MONITOR_PID
 ```
 
 ## File Locations
