@@ -2,6 +2,7 @@ import { Command } from 'commander';
 import { WalletManager } from '../../core/wallet/manager';
 import { SolanaClient } from '../../utils/solana';
 import { JupiterClient } from '../../integrations/jupiter/client';
+import { EventLogger } from '../../core/events/logger';
 import { Cluster, LAMPORTS_PER_SOL } from '@solana/web3.js';
 
 export const sellCommand = new Command('sell')
@@ -159,17 +160,52 @@ export const sellCommand = new Command('sell')
       const result = await JupiterClient.executeSwap(quote, keypair);
 
       if (result.status === 'Success') {
+        // Log event
+        await EventLogger.log(
+          options.agentId,
+          'transaction_executed',
+          'info',
+          `Sell completed: ${actualAmount} ${options.token} for ${expectedOutput.toFixed(outputDecimals)} ${options.currency}`,
+          {
+            type: 'sell',
+            token: options.token,
+            amount: actualAmount,
+            received: expectedOutput,
+            currency: options.currency,
+            signature: result.signature,
+            explorer: SolanaClient.getExplorerUrl('tx', result.signature, options.network as Cluster),
+          }
+        );
+
         console.log('\n✅ Sell completed!');
         console.log('Signature:', result.signature);
         console.log('Explorer: ', SolanaClient.getExplorerUrl('tx', result.signature, options.network as Cluster));
         console.log('');
         console.log('💰 You received:', expectedOutput.toFixed(outputDecimals), options.currency);
       } else {
+        // Log failure
+        await EventLogger.log(
+          options.agentId,
+          'transaction_failed',
+          'error',
+          `Sell failed: ${JSON.stringify(result)}`,
+          { type: 'sell', token: options.token, amount: actualAmount }
+        );
+        
         console.log('\n❌ Sell failed');
         console.log('Details:', result);
       }
       console.log('');
     } catch (error) {
+      // Log error
+      await EventLogger.log(
+        options.agentId,
+        'error_occurred',
+        'error',
+        `Sell error: ${(error as Error).message}`,
+        { type: 'sell', token: options.token }
+      );
+      
       console.error('\n❌ Error:', (error as Error).message);
       process.exit(1);
     }

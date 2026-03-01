@@ -16,6 +16,7 @@ import { exportCommand } from './commands/export';
 import { importCommand } from './commands/import';
 import { multiSendCommand } from './commands/multi-send';
 import { guardrailsCommand } from './commands/guardrails';
+import { eventsCommand } from './commands/events';
 
 const program = new Command();
 
@@ -30,6 +31,7 @@ program.addCommand(importCommand);
 program.addCommand(dashboardCommand);
 program.addCommand(configCommand);
 program.addCommand(guardrailsCommand);
+program.addCommand(eventsCommand);
 program.addCommand(addressCommand);
 program.addCommand(balanceCommand);
 program.addCommand(tokensCommand);

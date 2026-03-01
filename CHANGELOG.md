@@ -2,6 +2,92 @@
 
 All notable changes to PAW (PocketAgent Wallet) will be documented in this file.
 
+## [1.3.0] - 2026-03-01
+
+### Added - Event Logging (Agent Visibility)
+
+#### 📊 New Command
+- **`paw events`** - Manage event logging and subscriptions
+  - Subscribe to event stream with `--subscribe`
+  - View recent events with `--show`
+  - Unsubscribe with `--unsubscribe`
+  - Clear event log with `--clear`
+  - Example: `paw events agent-alice --subscribe`
+
+#### ✨ Features
+- **File-Based Event Stream** - JSON lines format for easy parsing
+  - Events written to `~/.paw/events/<agent-id>.log`
+  - One event per line (JSON)
+  - Agents can tail the file for real-time updates
+  - Custom log path with `--path` option
+
+- **Event Types** - Comprehensive event coverage:
+  - `transaction_executed` - Buy/sell/send completed
+  - `transaction_failed` - Transaction failed
+  - `guardrail_blocked` - Transaction blocked by limits
+  - `guardrail_approved` - Transaction requires approval
+  - `error_occurred` - Error during operation
+  - `wallet_created` - New wallet initialized
+  - `config_updated` - Configuration changed
+
+- **Event Filtering** - Subscribe to specific events
+  - Filter by event type: `--events transaction_executed,error_occurred`
+  - Or log all events (default)
+
+- **Formatted Display** - Human-readable event table
+  - Shows timestamp, type, severity, message
+  - Color-coded severity (🟢 info, 🟡 warning, 🔴 error)
+  - Limit results with `--limit` option
+
+- **Integrated Everywhere** - Events logged automatically
+  - Buy command logs success/failure/errors
+  - Sell command logs success/failure/errors
+  - Send command logs success/failure/errors
+  - Guardrails log blocks and approvals
+
+#### 📚 Event Structure
+```json
+{
+  "event_id": "evt_1772369761718_0c0bf2fa",
+  "timestamp": "2026-03-01T12:56:01.718Z",
+  "agent_id": "agent-alice",
+  "type": "transaction_executed",
+  "severity": "info",
+  "message": "Send completed: 0.01 SOL to ...",
+  "payload": {
+    "type": "send",
+    "to": "...",
+    "amount": 0.01,
+    "signature": "...",
+    "explorer": "..."
+  }
+}
+```
+
+#### 🎯 Why This Matters
+Event logging gives agents full visibility into wallet operations. Agents can:
+- Monitor transactions in real-time
+- Track errors and failures
+- Audit guardrail blocks
+- Build automated responses to events
+- Debug issues without manual inspection
+
+**Use Cases:**
+- Real-time monitoring dashboards
+- Automated error recovery
+- Transaction auditing
+- Performance tracking
+- Compliance logging
+
+### Technical Details
+- Events stored in `~/.paw/events/`
+- JSON lines format (one event per line)
+- Subscription config in `~/.paw/events/config.json`
+- No performance impact when disabled
+- Automatic file creation on first event
+
+---
+
 ## [1.2.0] - 2026-03-01
 
 ### Added - Guardrails (Spending Limits & Safety)

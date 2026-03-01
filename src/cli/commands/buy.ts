@@ -3,6 +3,7 @@ import { WalletManager } from '../../core/wallet/manager';
 import { SolanaClient } from '../../utils/solana';
 import { JupiterClient } from '../../integrations/jupiter/client';
 import { GuardrailsEngine } from '../../core/guardrails/engine';
+import { EventLogger } from '../../core/events/logger';
 import { Cluster, LAMPORTS_PER_SOL } from '@solana/web3.js';
 
 export const buyCommand = new Command('buy')
@@ -73,6 +74,14 @@ export const buyCommand = new Command('buy')
       );
 
       if (!guardrailCheck.allowed) {
+        await EventLogger.log(
+          options.agentId,
+          'guardrail_blocked',
+          'warning',
+          `Buy blocked: ${guardrailCheck.reason}`,
+          { token: options.token, budget: budgetAmount, currency: options.currency }
+        );
+        
         console.log('\n🛡️  Guardrails: Transaction blocked');
         console.log('Reason:', guardrailCheck.reason);
         console.log('');
@@ -81,6 +90,14 @@ export const buyCommand = new Command('buy')
       }
 
       if (guardrailCheck.requiresApproval && !options.dryRun) {
+        await EventLogger.log(
+          options.agentId,
+          'guardrail_approved',
+          'info',
+          `Buy requires approval: ${budgetAmount} ${options.currency}`,
+          { token: options.token, budget: budgetAmount, currency: options.currency }
+        );
+        
         console.log('\n⚠️  Guardrails: This transaction requires approval');
         console.log('Amount exceeds approval threshold');
         console.log('');
@@ -163,17 +180,52 @@ export const buyCommand = new Command('buy')
           guardrailCheck.requiresApproval
         );
 
+        // Log event
+        await EventLogger.log(
+          options.agentId,
+          'transaction_executed',
+          'info',
+          `Buy completed: ${expectedOutput.toFixed(outputDecimals)} ${options.token}`,
+          {
+            type: 'buy',
+            token: options.token,
+            budget: budgetAmount,
+            currency: options.currency,
+            received: expectedOutput,
+            signature: result.signature,
+            explorer: SolanaClient.getExplorerUrl('tx', result.signature, options.network as Cluster),
+          }
+        );
+
         console.log('\n✅ Buy completed!');
         console.log('Signature:', result.signature);
         console.log('Explorer: ', SolanaClient.getExplorerUrl('tx', result.signature, options.network as Cluster));
         console.log('');
         console.log('💰 You received:', expectedOutput.toFixed(outputDecimals), options.token);
       } else {
+        // Log failure
+        await EventLogger.log(
+          options.agentId,
+          'transaction_failed',
+          'error',
+          `Buy failed: ${JSON.stringify(result)}`,
+          { type: 'buy', token: options.token, budget: budgetAmount, currency: options.currency }
+        );
+        
         console.log('\n❌ Buy failed');
         console.log('Details:', result);
       }
       console.log('');
     } catch (error) {
+      // Log error
+      await EventLogger.log(
+        options.agentId,
+        'error_occurred',
+        'error',
+        `Buy error: ${(error as Error).message}`,
+        { type: 'buy', token: options.token }
+      );
+      
       console.error('\n❌ Error:', (error as Error).message);
       process.exit(1);
     }

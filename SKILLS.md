@@ -52,6 +52,14 @@ paw guardrails <agent-id> --enable --profile degen    # Enable with degen profil
 paw guardrails <agent-id> --disable                   # Disable all limits
 paw guardrails <agent-id> --show                      # Check status and spending
 
+# 📊 Events - Event logging and monitoring (NEW!)
+paw events <agent-id> --subscribe                     # Enable event logging
+paw events <agent-id> --subscribe --path ./my.log     # Custom log path
+paw events <agent-id> --show                          # View recent events
+paw events <agent-id> --show --limit 50               # Show last 50 events
+paw events <agent-id> --unsubscribe                   # Disable logging
+paw events <agent-id> --clear                         # Clear event log
+
 # Send SOL
 paw send <agent-id> --to <address> --amount <sol-amount>
 
@@ -89,11 +97,14 @@ paw config <agent-id> --show
 
 ## AI Agent Workflow Examples
 
-### Example 1: Safe Trading with Guardrails (NEW!)
+### Example 1: Safe Trading with Guardrails and Event Logging (NEW!)
 
 ```bash
 # Enable guardrails for safety (micro profile for $100 wallet)
 paw guardrails trading-bot-001 --enable --profile micro
+
+# Enable event logging for visibility
+paw events trading-bot-001 --subscribe
 
 # Check limits
 paw guardrails trading-bot-001 --show
@@ -103,9 +114,17 @@ paw guardrails trading-bot-001 --show
 paw buy --agent-id trading-bot-001 --token BONK --budget 0.05
 # ✅ Allowed (under 0.1 SOL limit)
 
+# Check events to see what happened
+paw events trading-bot-001 --show
+# Shows: transaction_executed event with details
+
 # Try to buy over limits
 paw buy --agent-id trading-bot-001 --token BONK --budget 0.2
 # ❌ Blocked by guardrails!
+# Event logged: guardrail_blocked
+
+# Tail events in real-time (in another terminal)
+tail -f ~/.paw/events/trading-bot-001.log
 
 # Disable guardrails when needed
 paw guardrails trading-bot-001 --disable
@@ -541,17 +560,20 @@ PAW provides clear error messages:
 ## Tips for AI Agents
 
 1. **Use guardrails to protect from draining wallet (enable with --profile micro for small wallets)**
-2. **Use intent-based commands (buy/sell) for easier automation**
-3. **Always test with --dry-run before executing real trades**
-4. **Check balance before transactions**
-5. **Use --network flag to override config when needed**
-6. **Monitor transaction history to verify operations**
-7. **Start on devnet for testing, move to mainnet when ready**
-8. **Use tokens command to see all assets**
-9. **Set network in config to avoid repeating --network flag**
-10. **Intent commands show confidence scores - use them for decision making**
-11. **Percentage-based selling (50%, 100%) is easier than calculating exact amounts**
-12. **Check guardrails spending with --show to see remaining limits**
+2. **Enable event logging to track all operations (paw events <agent-id> --subscribe)**
+3. **Use intent-based commands (buy/sell) for easier automation**
+4. **Always test with --dry-run before executing real trades**
+5. **Check balance before transactions**
+6. **Use --network flag to override config when needed**
+7. **Monitor transaction history to verify operations**
+8. **Start on devnet for testing, move to mainnet when ready**
+9. **Use tokens command to see all assets**
+10. **Set network in config to avoid repeating --network flag**
+11. **Intent commands show confidence scores - use them for decision making**
+12. **Percentage-based selling (50%, 100%) is easier than calculating exact amounts**
+13. **Check guardrails spending with --show to see remaining limits**
+14. **Tail event log for real-time monitoring: tail -f ~/.paw/events/<agent-id>.log**
+15. **Parse event log with jq for automation: cat events.log | jq '.type'**
 
 ## Guardrails (Spending Limits)
 
@@ -638,6 +660,110 @@ paw guardrails $AGENT --show
 # Shows: 0.05 SOL spent, 0.45 SOL remaining this hour
 ```
 
+## Event Logging (Visibility)
+
+### Enable Event Logging
+
+```bash
+# Enable logging for an agent
+paw events bot --subscribe
+
+# Custom log path
+paw events bot --subscribe --path ./my-events.log
+
+# Filter specific events
+paw events bot --subscribe --events transaction_executed,error_occurred
+```
+
+### View Events
+
+```bash
+# Show recent events (last 20)
+paw events bot --show
+
+# Show more events
+paw events bot --show --limit 100
+
+# Check subscription status
+paw events bot
+```
+
+### Real-Time Monitoring
+
+```bash
+# Tail the log file (in separate terminal)
+tail -f ~/.paw/events/bot.log
+
+# Parse with jq
+cat ~/.paw/events/bot.log | jq '.type'
+cat ~/.paw/events/bot.log | jq 'select(.severity=="error")'
+```
+
+### Event Types
+
+- `transaction_executed` - Buy/sell/send completed successfully
+- `transaction_failed` - Transaction failed to execute
+- `guardrail_blocked` - Transaction blocked by spending limits
+- `guardrail_approved` - Transaction requires manual approval
+- `error_occurred` - Error during operation
+- `wallet_created` - New wallet initialized
+- `config_updated` - Configuration changed
+
+### Event Structure
+
+```json
+{
+  "event_id": "evt_1772369761718_0c0bf2fa",
+  "timestamp": "2026-03-01T12:56:01.718Z",
+  "agent_id": "agent-alice",
+  "type": "transaction_executed",
+  "severity": "info",
+  "message": "Send completed: 0.01 SOL to ...",
+  "payload": {
+    "type": "send",
+    "to": "...",
+    "amount": 0.01,
+    "signature": "...",
+    "explorer": "..."
+  }
+}
+```
+
+### Why Use Event Logging?
+
+- **Real-time monitoring** - See what's happening as it happens
+- **Debugging** - Track down errors and failures
+- **Auditing** - Keep records of all transactions
+- **Automation** - Build event-driven workflows
+- **Compliance** - Maintain transaction logs
+
+### Event Logging in Action
+
+```bash
+#!/bin/bash
+# Monitored trading bot with event logging
+
+AGENT="monitored-bot"
+
+# Enable event logging
+paw events $AGENT --subscribe
+
+# Enable guardrails
+paw guardrails $AGENT --enable --profile micro
+
+# Start monitoring in background
+tail -f ~/.paw/events/$AGENT.log &
+
+# Execute trades
+paw buy --agent-id $AGENT --token BONK --budget 0.05
+
+# Check events
+paw events $AGENT --show
+
+# Parse errors
+cat ~/.paw/events/$AGENT.log | jq 'select(.severity=="error")'
+```
+
 ## File Locations
 
 ```bash
@@ -646,7 +772,14 @@ paw guardrails $AGENT --show
 ~/.paw/agents/<agent-id>/passphrase.enc
 ~/.paw/agents/<agent-id>/config.json
 
-# All encrypted except config.json
+# Guardrails
+~/.paw/guardrails/<agent-id>.json
+
+# Event logs
+~/.paw/events/<agent-id>.log
+~/.paw/events/config.json
+
+# All encrypted except config files
 ```
 
 ---

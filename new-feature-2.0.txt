@@ -47,8 +47,8 @@ Roadmap from Simple → Hard
    - Difficulty: 🔴 Hard (7-10 days)
    - Why: New HTTP server, routing, middleware, error handling
 
-7. Event Logging (File-Based) 🟡 MEDIUM
-   - Add: paw events --subscribe --format file --path ./events.log
+7. Event Logging (File-Based) 🟡 MEDIUM ✅ SHIPPED v1.3.0
+   - Add: paw events <agent-id> --subscribe --format file --path ./events.log
    - Log all transactions, balance changes, errors
    - JSON lines format for easy parsing
    - Difficulty: 🟡 Medium (3-4 days)
@@ -119,16 +119,18 @@ To have a SOLID autonomous wallet, ship these 3 core features:
 ✅ MUST SHIP:
 1. Intent Buy/Sell (#1, #2) - High-level commands agents understand ✅ SHIPPED v1.1.0
 2. Guardrails (#5) - Spending limits for safety ✅ SHIPPED v1.2.0
-3. Event Logging (#7) - Agents need to know what happened 👈 NEXT
-4. Basic Strategy Engine (#8) - Set and forget (take-profit/stop-loss)
+3. Event Logging (#7) - Agents need to know what happened ✅ SHIPPED v1.3.0
+4. Basic Strategy Engine (#8) - Set and forget (take-profit/stop-loss) 👈 NEXT
 
 🎯 SHIPPING ORDER (MVP):
 Week 1-2: #1, #2 (Buy/sell intents) - Foundation ✅ DONE
 Week 3-4: #5 (Guardrails) - Safety first ✅ DONE
-Week 5: #7 (Event logging) - Visibility 👈 NEXT
-Week 6-8: #8 (Strategy engine) - True autonomy
+Week 5: #7 (Event logging) - Visibility ✅ DONE
+Week 6-8: #8 (Strategy engine) - True autonomy 👈 NEXT
 
 Ship these 4 = Legit autonomous wallet ✨
+
+3 out of 4 MVP features complete! 🎉
 
 OPTIONAL (Nice to have but not required):
 - #3 Dry run - Testing
