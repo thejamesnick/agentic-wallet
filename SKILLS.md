@@ -59,6 +59,18 @@ paw multi-send <agent-id> --addresses <addr1>,<addr2> --amounts <amount1>,<amoun
 paw swap <agent-id> --from <token> --to <token> --amount <amount>
 # Amount can be exact (0.5) or percentage (50%)
 
+# 🆕 Intent-based buy (agent-friendly!)
+paw buy --agent-id <agent-id> --token <symbol> --budget <amount> --currency <SOL|USDC|USDT>
+# Example: paw buy --agent-id bot --token BONK --budget 0.2 --max-slippage 10
+
+# 🆕 Intent-based sell (with percentage support!)
+paw sell --agent-id <agent-id> --token <symbol> --amount <amount|percentage> --currency <SOL|USDC|USDT>
+# Example: paw sell --agent-id bot --token BONK --amount 50% --currency SOL
+
+# 🆕 Dry run mode (test without executing)
+paw buy --agent-id <agent-id> --token BONK --budget 0.2 --dry-run
+paw sell --agent-id <agent-id> --token BONK --amount 50% --dry-run
+
 # View transaction history
 paw history <agent-id>
 
@@ -83,7 +95,47 @@ paw balance trading-bot-001
 #    ~138.68 USD
 ```
 
-### Example 2: Fast Token Swap
+### Example 2: Intent-Based Buy (NEW!)
+
+```bash
+# Buy BONK with 0.2 SOL budget
+paw buy --agent-id trading-bot-001 --token BONK --budget 0.2 --max-slippage 10
+
+# Output shows execution plan:
+# ✨ Intent Summary:
+# Intent:          Buy BONK
+# Budget:          0.2 SOL
+# Max Slippage:    10%
+# 
+# 📈 Quote:
+# Expected Output: 58329.000000 BONK
+# Worst Case:      52496.100000 BONK (after 10% slippage)
+# Price Impact:    4.8%
+# Confidence:      95%
+#
+# 📋 Execution Plan:
+# 1. Approve SOL spend
+# 2. Execute Jupiter swap
+# 3. Confirm on Solana
+
+# Test strategy first with dry run
+paw buy --agent-id trading-bot-001 --token BONK --budget 0.2 --dry-run
+```
+
+### Example 3: Intent-Based Sell (NEW!)
+
+```bash
+# Sell 50% of BONK holdings
+paw sell --agent-id trading-bot-001 --token BONK --amount 50% --currency SOL
+
+# Sell exact amount
+paw sell --agent-id trading-bot-001 --token BONK --amount 1000 --currency USDC
+
+# Test before executing
+paw sell --agent-id trading-bot-001 --token BONK --amount 50% --dry-run
+```
+
+### Example 4: Fast Token Swap (Classic Method)
 
 ```bash
 # Swap exact amount: 0.1 SOL to USDC
@@ -98,7 +150,7 @@ paw swap trading-bot-001 --from BONK --to USDC --amount 100% --network mainnet-b
 # Executes in <2 seconds using Jupiter aggregator
 ```
 
-### Example 3: Send Payment
+### Example 5: Send Payment
 
 ```bash
 # Send 0.5 SOL to another agent
@@ -111,7 +163,7 @@ paw send agent-alice --to DJcVfT6dienfSbudJzZ82WN4EkVPgVaT18oBK971Yi2c --amount 
 paw send agent-alice --to <address> --amount 0.5
 ```
 
-### Example 4: Monitor Transactions
+### Example 6: Monitor Transactions
 
 ```bash
 # Check last 10 transactions
@@ -125,7 +177,7 @@ paw history trading-bot-001 --limit 10
 # - Timestamp
 ```
 
-### Example 5: Multi-Agent Setup
+### Example 7: Multi-Agent Setup
 
 ```bash
 # Create multiple agents
@@ -141,7 +193,7 @@ paw init trading-bot-001
 
 ```bash
 #!/bin/bash
-# Autonomous trading agent
+# Autonomous trading agent with intent-based commands
 
 AGENT="trading-bot-001"
 
@@ -152,10 +204,21 @@ BALANCE=$(paw balance $AGENT)
 HISTORY=$(paw history $AGENT --limit 5)
 
 # 3. Make decision based on balance
-# If balance > 1 SOL, swap some to USDC
-paw swap $AGENT --from SOL --to USDC --amount 0.5
+# If balance > 1 SOL, buy some BONK
 
-# 4. Verify transaction
+# Test strategy first (dry run)
+paw buy --agent-id $AGENT --token BONK --budget 0.5 --max-slippage 10 --dry-run
+
+# Execute if dry run looks good
+paw buy --agent-id $AGENT --token BONK --budget 0.5 --max-slippage 10
+
+# 4. Monitor position
+paw tokens $AGENT
+
+# 5. Take profit when ready (sell 50%)
+paw sell --agent-id $AGENT --token BONK --amount 50% --currency SOL
+
+# 6. Verify transaction
 paw history $AGENT --limit 1
 ```
 
@@ -279,9 +342,28 @@ paw history my-first-agent
 
 ## Meme Trading Capabilities
 
-PAW is built for fast, autonomous meme coin trading:
+PAW is built for fast, autonomous meme coin trading with intent-based commands:
 
-### Quick Meme Trading Commands
+### Quick Meme Trading Commands (Intent-Based - RECOMMENDED)
+
+```bash
+# Buy meme coin with budget and max slippage
+paw buy --agent-id bot --token BONK --budget 0.5 --max-slippage 10
+
+# Test buy first (dry run)
+paw buy --agent-id bot --token BONK --budget 0.5 --max-slippage 10 --dry-run
+
+# Sell 100% of meme coin (exit position)
+paw sell --agent-id bot --token BONK --amount 100% --currency SOL --max-slippage 10
+
+# Take 50% profit (sell half)
+paw sell --agent-id bot --token BONK --amount 50% --currency USDC --max-slippage 10
+
+# Buy with USDC instead of SOL
+paw buy --agent-id bot --token WIF --budget 10 --currency USDC --max-slippage 15
+```
+
+### Classic Swap Commands (Still Supported)
 
 ```bash
 # Buy meme coin with custom slippage
@@ -300,6 +382,13 @@ paw swap bot --from SOL --to BONK --amount 0.5 --slippage 500
 ### Slippage Settings for Meme Coins
 
 ```bash
+# Intent-based commands use percentage (easier!)
+--max-slippage 5      # 5% - Normal meme trading
+--max-slippage 10     # 10% - High volatility
+--max-slippage 15     # 15% - Very high volatility
+--max-slippage 20     # 20% - New launches
+
+# Classic swap commands use basis points
 --slippage 50     # 0.5% - Stable tokens
 --slippage 100    # 1% - Normal trading
 --slippage 500    # 5% - Meme coins (volatile)
@@ -316,43 +405,55 @@ paw swap bot --from SOL --to BONK --amount 0.5 --slippage 500
 --priority-fee 500000   # Ultra fast (competitive sniping)
 ```
 
-### Example: Sniper Bot
+### Example: Sniper Bot (Intent-Based)
 
 ```bash
 #!/bin/bash
-# Snipe new token launch
+# Snipe new token launch with intent commands
 
 AGENT="sniper-bot"
-TARGET="<NEW_MEME_MINT>"
+TARGET="BONK"  # Or any token symbol/mint
 
-# Fast execution with high priority
-paw swap $AGENT \
-  --from SOL \
-  --to $TARGET \
-  --amount 0.5 \
-  --slippage 2000 \
-  --priority-fee 500000
+# Test strategy first
+paw buy --agent-id $AGENT \
+  --token $TARGET \
+  --budget 0.5 \
+  --max-slippage 20 \
+  --dry-run
+
+# Execute if dry run looks good
+paw buy --agent-id $AGENT \
+  --token $TARGET \
+  --budget 0.5 \
+  --max-slippage 20 \
+  --optimize-for fastest
 
 # Verify purchase
 paw tokens $AGENT | grep $TARGET
 ```
 
-### Example: Take Profit Bot
+### Example: Take Profit Bot (Intent-Based)
 
 ```bash
 #!/bin/bash
 # Sell when target hit
 
 AGENT="profit-bot"
-MEME="<MEME_MINT>"
+MEME="BONK"
 
 # Sell 50% of holdings
-paw swap $AGENT \
-  --from $MEME \
-  --to SOL \
-  --amount 500000 \
-  --slippage 1000 \
-  --priority-fee 100000
+paw sell --agent-id $AGENT \
+  --token $MEME \
+  --amount 50% \
+  --currency SOL \
+  --max-slippage 10
+
+# Or sell all (100%)
+paw sell --agent-id $AGENT \
+  --token $MEME \
+  --amount 100% \
+  --currency SOL \
+  --max-slippage 10
 ```
 
 ### Popular Meme Coins
@@ -411,12 +512,16 @@ PAW provides clear error messages:
 
 ## Tips for AI Agents
 
-1. **Always check balance before transactions**
-2. **Use --network flag to override config when needed**
-3. **Monitor transaction history to verify operations**
-4. **Start on devnet for testing, move to mainnet when ready**
-5. **Use tokens command to see all assets**
-6. **Set network in config to avoid repeating --network flag**
+1. **Use intent-based commands (buy/sell) for easier automation**
+2. **Always test with --dry-run before executing real trades**
+3. **Check balance before transactions**
+4. **Use --network flag to override config when needed**
+5. **Monitor transaction history to verify operations**
+6. **Start on devnet for testing, move to mainnet when ready**
+7. **Use tokens command to see all assets**
+8. **Set network in config to avoid repeating --network flag**
+9. **Intent commands show confidence scores - use them for decision making**
+10. **Percentage-based selling (50%, 100%) is easier than calculating exact amounts**
 
 ## File Locations
 
