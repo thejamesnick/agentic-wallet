@@ -6,6 +6,8 @@ import { balanceCommand } from './commands/balance';
 import { addressCommand } from './commands/address';
 import { sendCommand } from './commands/send';
 import { swapCommand } from './commands/swap';
+import { buyCommand } from './commands/buy';
+import { sellCommand } from './commands/sell';
 import { historyCommand } from './commands/history';
 import { configCommand } from './commands/config';
 import { tokensCommand } from './commands/tokens';
@@ -32,6 +34,8 @@ program.addCommand(tokensCommand);
 program.addCommand(sendCommand);
 program.addCommand(multiSendCommand);
 program.addCommand(swapCommand);
+program.addCommand(buyCommand);
+program.addCommand(sellCommand);
 program.addCommand(historyCommand);
 program.addCommand(exportCommand);
 
