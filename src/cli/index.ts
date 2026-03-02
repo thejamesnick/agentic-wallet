@@ -18,13 +18,25 @@ import { multiSendCommand } from './commands/multi-send';
 import { guardrailsCommand } from './commands/guardrails';
 import { eventsCommand } from './commands/events';
 import { monitorCommand } from './commands/monitor';
+import * as fs from 'fs';
+import * as path from 'path';
+
+// Get version from package.json
+const packageJsonPath = path.join(__dirname, '../../package.json');
+let version = 'unknown';
+try {
+  const packageJson = JSON.parse(fs.readFileSync(packageJsonPath, 'utf8'));
+  version = packageJson.version;
+} catch (e) {
+  // Fallback if package.json can't be read
+}
 
 const program = new Command();
 
 program
   .name('paw')
   .description('📟 PocketAgent Wallet - Agentic wallet for AI agents on Solana')
-  .version('0.1.0');
+  .version(version);
 
 // Register commands
 program.addCommand(initCommand);
