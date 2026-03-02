@@ -15,11 +15,25 @@ export class MachineIdentity {
    */
   static getMachineKey(): string {
     // v2: Removed hostname for container compatibility
+    let username = 'unknown';
+    try {
+      username = os.userInfo().username;
+    } catch {
+      // Ignore
+    }
+
+    let homedir = 'unknown';
+    try {
+      homedir = os.homedir();
+    } catch {
+      // Ignore
+    }
+
     const machineData = [
-      os.userInfo().username,  // User name
+      username,                // User name
       os.platform(),           // OS (darwin, linux, win32)
       os.arch(),               // CPU architecture (x64, arm64)
-      os.homedir(),            // Home directory path
+      homedir,                 // Home directory path
     ].join('|');
 
     return crypto
@@ -34,12 +48,26 @@ export class MachineIdentity {
    */
   private static getLegacyMachineKey(): string {
     // v1: Original method with hostname
+    let username = 'unknown';
+    try {
+      username = os.userInfo().username;
+    } catch {
+      // Ignore
+    }
+
+    let homedir = 'unknown';
+    try {
+      homedir = os.homedir();
+    } catch {
+      // Ignore
+    }
+
     const machineData = [
       os.hostname(),           // Computer name (causes container issues)
-      os.userInfo().username,  // User name
+      username,                // User name
       os.platform(),           // OS (darwin, linux, win32)
       os.arch(),               // CPU architecture (x64, arm64)
-      os.homedir(),            // Home directory path
+      homedir,                 // Home directory path
     ].join('|');
 
     return crypto
