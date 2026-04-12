@@ -1,0 +1,110 @@
+# PAW Bags Integration - TODO List
+# First Steps to Get Started
+
+## 🚀 IMMEDIATE ACTIONS (Today)
+
+[ ] Sign up for Bags account
+    - Go to https://bags.fm
+    - Create account
+    - Verify email
+
+[ ] Access Developer Dashboard
+    - Go to https://dev.bags.fm
+    - Login with your account
+    - Navigate to API Keys section
+
+[ ] Get API Key
+    - Create new API key
+    - Copy and store securely
+    - This will be used for Normal API calls
+
+[ ] Test API Access
+    - Run: curl -H "x-api-key: YOUR_API_KEY" https://public-api-v2.bags.fm/api/v1/solana/bags/pools
+    - Verify response is successful
+
+## 🛠️ DEVELOPMENT SETUP (Day 1)
+
+[ ] Create Bags Client Structure
+    - mkdir -p src/integrations/bags
+    - touch src/integrations/bags/client.ts
+    - touch src/integrations/bags/auth.ts
+    - touch src/integrations/bags/types.ts
+
+[ ] Implement Basic Bags Client
+    - Create BagsClient class in client.ts
+    - Add constructor with apiKey parameter
+    - Add testConnection() method
+    - Add basic error handling
+
+[ ] Create First Test
+    - Create tests/bags.test.ts
+    - Test API connection
+    - Test client initialization
+    - Run: npm test -- bags.test.ts
+
+## 📋 PHASE 1 WEEK 1 TASKS
+
+[ ] Day 1: Setup & Basic Client
+    - Complete immediate actions above
+    - Basic BagsClient implementation
+    - API connection testing
+
+[ ] Day 2: Agent Authentication
+    - Implement Agent API auth flow
+    - Add initAuth() method
+    - Add completeAuth() method
+    - Test authentication on devnet
+
+[ ] Day 3: Token Launch Logic
+    - Implement Normal API token launch
+    - Add launchToken() method
+    - Integration with existing PAW wallets
+    - Test token launch on devnet
+
+[ ] Day 4: CLI Commands
+    - Create paw bags setup-agent command
+    - Create paw bags launch command
+    - Add command parsing and validation
+    - Test end-to-end flow
+
+[ ] Day 5: Testing & Bug Fixes
+    - Comprehensive testing
+    - Fix any issues found
+    - Performance optimization
+    - Documentation updates
+
+## 🎯 SUCCESS CRITERIA
+
+[ ] Agent can authenticate with Bags Agent API
+[ ] Agent receives dev API key for Normal API
+[ ] Agent can launch token using existing PAW wallet
+[ ] Token appears on Bags launchpad
+[ ] Initial buy executes correctly
+[ ] Fee sharing configured properly
+[ ] All operations respect PAW guardrails
+[ ] No wallet import/export needed
+
+## 📝 NOTES
+
+- Focus on Solana only (no Base for now)
+- Use existing PAW wallets (no new wallet creation)
+- Agent API for setup, Normal API for operations
+- Keep it simple and working
+
+## 🔗 RESOURCES
+
+- Bags API Docs: https://docs.bags.fm/
+- Bags Developer Dashboard: https://dev.bags.fm/
+- Agent API Reference: https://docs.bags.fm/api-reference/agent-auth-init
+- Normal API Reference: https://docs.bags.fm/api-reference/create-token-launch-transaction
+
+## ⚠️ BLOCKERS
+
+- Need Bags API key to proceed
+- Need to understand Agent API auth flow
+- Need to test on devnet first
+
+---
+Last Updated: March 13, 2026
+Status: Ready to Start
+Priority: High
