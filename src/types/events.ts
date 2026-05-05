@@ -6,7 +6,13 @@ export type EventType =
   | 'guardrail_approved'
   | 'error_occurred'
   | 'wallet_created'
-  | 'config_updated';
+  | 'config_updated'
+  | 'strategy_created'
+  | 'strategy_entry_executed'
+  | 'strategy_exit_triggered'
+  | 'strategy_completed'
+  | 'strategy_cancelled'
+  | 'strategy_failed';
 
 export type EventSeverity = 'info' | 'warning' | 'error' | 'critical';
 

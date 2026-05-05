@@ -18,6 +18,7 @@ import { multiSendCommand } from './commands/multi-send';
 import { guardrailsCommand } from './commands/guardrails';
 import { eventsCommand } from './commands/events';
 import { monitorCommand } from './commands/monitor';
+import { strategyCommand } from './commands/strategy';
 import * as fs from 'fs';
 import * as path from 'path';
 
@@ -46,6 +47,7 @@ program.addCommand(configCommand);
 program.addCommand(guardrailsCommand);
 program.addCommand(eventsCommand);
 program.addCommand(monitorCommand);
+program.addCommand(strategyCommand);
 program.addCommand(addressCommand);
 program.addCommand(balanceCommand);
 program.addCommand(tokensCommand);

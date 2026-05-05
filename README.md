@@ -53,7 +53,16 @@ We're launching on Solana because:
 
 ## Key Features
 
-### 🛡️ Guardrails & Safety (NEW!)
+### 🧠 Autonomous Strategy Engine (NEW!)
+- **Moonshot Strategies**: Buy a token, auto-sell on take-profit, stop-loss, or time exit
+- **DCA Strategies**: Automatically buy on a fixed schedule (daily, hourly, etc.)
+- **Declarative Exits**: Define `2x take-profit`, `0.5x stop-loss`, `24h time limit` in one command
+- **Background Runner**: `paw strategy run <id>` monitors positions and executes exits autonomously
+- **Full Lifecycle**: pause, resume, cancel at any time without losing state
+- **Event-Driven**: emits webhook events on every entry/exit execution
+- **Strategy Registry**: list and inspect all strategies per agent
+
+### 🛡️ Guardrails & Safety
 - **Risk Profiles**: Micro, Conservative, Moderate, Degen, Whale
 - **Spending Limits**: Per-transaction, per-hour, per-day caps
 - **Real-Time Tracking**: Monitor spending and remaining limits
@@ -243,10 +252,10 @@ paw send my-trading-bot --to <recipient-address> --amount 0.5
 # 8. Swap tokens (fast execution with Jupiter)
 paw swap my-trading-bot --from SOL --to BONK --amount 0.5
 
-# 9. Intent-based buy (NEW! Agent-friendly)
+# 9. Intent-based buy (agent-friendly)
 paw buy --agent-id my-trading-bot --token BONK --budget 0.2 --currency SOL --max-slippage 10
 
-# 10. Intent-based sell (NEW! Agent-friendly)
+# 10. Intent-based sell (agent-friendly)
 paw sell --agent-id my-trading-bot --token BONK --amount 50% --currency SOL --max-slippage 10
 
 # 11. Dry run mode (test without executing)
@@ -257,6 +266,43 @@ paw history my-trading-bot
 
 # 13. Launch interactive dashboard
 paw dashboard my-trading-bot
+
+# ─── Autonomous Strategies (NEW!) ──────────────────────────────────────────
+
+# 14. Create a moonshot strategy (buy BONK, auto-sell at 2× or stop at 0.5×)
+paw strategy create \
+  --agent-id my-trading-bot \
+  --token BONK \
+  --budget 0.2 \
+  --currency SOL \
+  --take-profit 2x \
+  --stop-loss 0.5x \
+  --time-limit 24h \
+  --description "BONK degen play"
+
+# 15. Create a DCA strategy (buy SOL every day for 10 days)
+paw strategy dca \
+  --agent-id my-trading-bot \
+  --token SOL \
+  --budget 0.05 \
+  --currency SOL \
+  --interval 1d \
+  --runs 10 \
+  --description "Daily SOL DCA"
+
+# 16. Start monitoring a strategy (runs in foreground; use nohup & for background)
+paw strategy run <strategy-id>
+
+# 17. List all strategies
+paw strategy list --agent-id my-trading-bot
+
+# 18. Check strategy status
+paw strategy status <strategy-id>
+
+# 19. Pause / resume / cancel
+paw strategy pause <strategy-id>
+paw strategy resume <strategy-id>
+paw strategy cancel <strategy-id>
 ```
 
 ### For AI Agents
@@ -315,6 +361,7 @@ console.log(`Balance: ${balance} SOL`);
 - [x] DeFi integration (Jupiter DEX)
 - [x] Multi-agent support
 - [x] Interactive dashboard
+- [x] Autonomous strategy engine (moonshot + DCA)
 - [ ] Multi-chain support (EVM)
 - [ ] Advanced DeFi protocols
 - [ ] Cross-chain capabilities
