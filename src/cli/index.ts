@@ -40,7 +40,15 @@ const program = new Command();
 program
   .name('paw')
   .description('📟 PocketAgent Wallet - Agentic wallet for AI agents on Solana')
-  .version(version);
+  .version(version)
+  .addHelpText('after', `
+Environment Variables:
+  SOLANA_RPC_URL          Generic RPC URL override for all networks
+  SOLANA_RPC_URL_MAINNET  Mainnet-beta specific RPC URL override
+  SOLANA_RPC_URL_DEVNET   Devnet specific RPC URL override
+  SOLANA_WSS_URL          Custom WebSocket URL override for balance monitoring
+  HELIUS_API_KEY          Custom Helius API Key override for RPC and WebSockets
+`);
 
 // Register commands
 program.addCommand(initCommand);

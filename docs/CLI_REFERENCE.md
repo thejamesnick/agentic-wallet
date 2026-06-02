@@ -714,6 +714,32 @@ All wallet data is stored in `~/.paw/agents/<agent-id>/`:
 ```
 **Solution:** Use valid network name
 
+## Custom RPC Configurations & API Keys
+
+To prevent rate limit errors (such as `429 Too Many Requests`) from shared public endpoints, you can easily use your own custom RPC keys globally or per-agent.
+
+### 1. Global Configuration via Environment Variables
+
+Set the following variables in your `.env` file or terminal session:
+* `SOLANA_RPC_URL`: Generic RPC URL to use for all networks.
+* `SOLANA_RPC_URL_MAINNET`: Mainnet-beta specific RPC URL.
+* `SOLANA_RPC_URL_DEVNET`: Devnet specific RPC URL.
+* `SOLANA_WSS_URL`: Custom WebSocket URL for balance monitoring.
+* `HELIUS_API_KEY`: Custom Helius API Key (replaces the default shared key).
+
+### 2. Per-Agent Configuration
+
+Add an `"rpcUrl"` field directly to your agent's config file (located at `~/.paw/agents/<agent-id>/config.json`):
+```json
+{
+  "agentId": "trading-bot-001",
+  "publicKey": "...",
+  "network": "devnet",
+  "rpcUrl": "https://api.devnet.solana.com"
+}
+```
+Whenever this agent executes balance or transaction commands, it will route its requests directly through that RPC endpoint.
+
 ---
 
 ## Getting Help
