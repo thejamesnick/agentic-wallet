@@ -321,6 +321,31 @@ paw balance <agent-id> --network mainnet-beta
 paw swap <agent-id> --from SOL --to USDC --amount 0.1 --slippage 500
 ```
 
+### Custom RPC Node Configuration (Prevent Rate Limits)
+
+To prevent `429 Too Many Requests` rate limits from the default shared Helius key, you can configure your own custom RPC endpoints.
+
+#### 1. Per-Agent Configuration
+Add `"rpcUrl"` directly to your agent's config file (`~/.paw/agents/<agent-id>/config.json`):
+```json
+{
+  "agentId": "my-agent",
+  "publicKey": "...",
+  "network": "devnet",
+  "rpcUrl": "https://api.devnet.solana.com"
+}
+```
+
+#### 2. Environment Variable Configuration
+Set these variables in your terminal or `.env` file:
+* `SOLANA_RPC_URL`: Generic RPC URL to use for all networks
+* `SOLANA_RPC_URL_MAINNET`: Mainnet-beta specific RPC URL override
+* `SOLANA_RPC_URL_DEVNET`: Devnet specific RPC URL override
+* `SOLANA_WSS_URL`: Custom WebSocket URL override for `paw monitor`
+* `HELIUS_API_KEY`: Custom Helius key override
+
+---
+
 ## Common Token Addresses
 
 ```bash
