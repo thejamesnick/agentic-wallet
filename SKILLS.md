@@ -1,3 +1,8 @@
+---
+name: paw-skills
+description: Comprehensive skills guide and reference for AI agents to interact with PAW (PocketAgent Wallet) on Solana. Documents commands, workflows, error handling, guardrails, and real-time monitoring.
+---
+
 # 📟 PAW Skills for AI Agents
 
 **PocketAgent Wallet (PAW)** - Agentic wallet for AI agents on Solana

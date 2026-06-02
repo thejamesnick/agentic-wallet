@@ -1,3 +1,8 @@
+---
+name: professional-docs
+description: Transform technical documentation to achieve Apple-grade professional quality—clear, concise, minimalist, and free of AI-generated characteristics.
+---
+
 # Professional Documentation Skill
 
 This skill transforms technical documentation to achieve Apple-grade professional quality—clear, concise, minimalist, and free of AI-generated characteristics.
