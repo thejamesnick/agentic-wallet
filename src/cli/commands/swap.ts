@@ -43,7 +43,7 @@ export const swapCommand = new Command('swap')
 
       // Load keypair to get wallet address
       const keypair = await WalletManager.loadKeypairAuto(options.agentId);
-      const connection = SolanaClient.getConnection(options.network as Cluster);
+      const connection = SolanaClient.getConnection(options.network as Cluster, config.rpcUrl);
 
       // Check if amount is percentage
       const isPercentage = options.amount.toString().endsWith('%');

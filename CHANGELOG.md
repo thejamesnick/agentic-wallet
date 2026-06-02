@@ -2,6 +2,17 @@
 
 All notable changes to PAW (PocketAgent Wallet) will be documented in this file.
 
+## [1.4.2] - 2026-06-02
+
+### Added - Flexible RPC Configurations & Fallbacks
+- **Network-Specific RPC Overrides** - Configure separate RPC URLs using environment variables:
+  - `SOLANA_RPC_URL_MAINNET` (for mainnet-beta network)
+  - `SOLANA_RPC_URL_DEVNET` (for devnet network)
+- **Global overrides** - Specify a generic RPC/WebSocket URL using `SOLANA_RPC_URL` or `SOLANA_WSS_URL` variables.
+- **Agent-Specific RPC Config** - Pass custom `"rpcUrl"` inside any agent's `config.json` file (e.g. `rpcUrl: "https://api.devnet.solana.com"`) so that agent operations route through their specific node automatically.
+- **Public Fallbacks** - Gracefully fallback to standard, public Solana RPC endpoints instead of failing when default Helius API keys are rate-limited.
+- **CLI Commands integration** - Updated `balance`, `buy`, `sell`, `swap`, `send`, and `tokens` commands to honor customized agent RPC configurations.
+
 ## [1.4.0] - 2026-03-01
 
 ### Added - Webhook Events & Real-Time Balance Monitoring

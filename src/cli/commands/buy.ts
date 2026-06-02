@@ -46,9 +46,11 @@ export const buyCommand = new Command('buy')
         console.log(`   Found: ${outputTokenInfo.symbol} (${outputTokenInfo.name})`);
       }
 
-      // Load keypair
+      // Load config to check for custom rpcUrl
+      const { FileSystemStorage } = await import('../../core/storage/filesystem');
+      const config = await FileSystemStorage.loadConfig(options.agentId);
+      const connection = SolanaClient.getConnection(options.network as Cluster, config.rpcUrl);
       const keypair = await WalletManager.loadKeypairAuto(options.agentId);
-      const connection = SolanaClient.getConnection(options.network as Cluster);
 
       // Calculate amount in smallest unit
       const budgetAmount = parseFloat(options.budget);

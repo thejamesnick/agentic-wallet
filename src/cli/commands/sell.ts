@@ -48,7 +48,10 @@ export const sellCommand = new Command('sell')
 
       // Load keypair
       const keypair = await WalletManager.loadKeypairAuto(options.agentId);
-      const connection = SolanaClient.getConnection(options.network as Cluster);
+      // Load config to check for custom rpcUrl
+      const { FileSystemStorage } = await import('../../core/storage/filesystem');
+      const config = await FileSystemStorage.loadConfig(options.agentId);
+      const connection = SolanaClient.getConnection(options.network as Cluster, config.rpcUrl);
 
       // Check if amount is percentage
       const isPercentage = options.amount.toString().endsWith('%');

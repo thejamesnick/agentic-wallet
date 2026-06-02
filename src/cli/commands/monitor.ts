@@ -42,11 +42,8 @@ export const monitorCommand = new Command('monitor')
       }
 
       // Use network from options or fall back to config
-      let network = options.network;
-      if (!network) {
-        const config = await FileSystemStorage.loadConfig(agentId);
-        network = config.network || 'mainnet-beta';
-      }
+      const config = await FileSystemStorage.loadConfig(agentId);
+      const network = options.network || config.network || 'mainnet-beta';
 
       // Load wallet address
       const keypair = await WalletManager.loadKeypairAuto(agentId);
@@ -58,19 +55,35 @@ export const monitorCommand = new Command('monitor')
       console.log('Network: ', network);
       console.log('Webhook: ', subscription.url);
       console.log('');
-      console.log('🔄 Connecting to Helius WebSocket...');
+      console.log('🔄 Connecting to WebSocket...');
 
       // Get WebSocket endpoint
-      const HELIUS_API_KEY = '2452c60f-ab21-4a80-b486-30f0aca63d2f';
       let wsEndpoint: string;
       
-      if (network === 'mainnet-beta') {
-        wsEndpoint = `wss://mainnet.helius-rpc.com/?api-key=${HELIUS_API_KEY}`;
-      } else if (network === 'devnet') {
-        wsEndpoint = `wss://devnet.helius-rpc.com/?api-key=${HELIUS_API_KEY}`;
+      if (process.env.SOLANA_WSS_URL) {
+        wsEndpoint = process.env.SOLANA_WSS_URL;
+      } else if (config.rpcUrl) {
+        // Try to derive WebSocket URL from the HTTP RPC URL
+        if (config.rpcUrl.startsWith('https://')) {
+          wsEndpoint = config.rpcUrl.replace('https://', 'wss://');
+        } else if (config.rpcUrl.startsWith('http://')) {
+          wsEndpoint = config.rpcUrl.replace('http://', 'ws://');
+        } else {
+          const apiKey = process.env.HELIUS_API_KEY || '2452c60f-ab21-4a80-b486-30f0aca63d2f';
+          wsEndpoint = network === 'mainnet-beta'
+            ? `wss://mainnet.helius-rpc.com/?api-key=${apiKey}`
+            : `wss://devnet.helius-rpc.com/?api-key=${apiKey}`;
+        }
       } else {
-        console.error('❌ Error: Only mainnet-beta and devnet are supported');
-        process.exit(1);
+        const apiKey = process.env.HELIUS_API_KEY || '2452c60f-ab21-4a80-b486-30f0aca63d2f';
+        if (network === 'mainnet-beta') {
+          wsEndpoint = `wss://mainnet.helius-rpc.com/?api-key=${apiKey}`;
+        } else if (network === 'devnet') {
+          wsEndpoint = `wss://devnet.helius-rpc.com/?api-key=${apiKey}`;
+        } else {
+          console.error('❌ Error: Only mainnet-beta and devnet are supported');
+          process.exit(1);
+        }
       }
 
       // Create WebSocket connection

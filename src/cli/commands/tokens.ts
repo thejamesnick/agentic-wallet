@@ -25,11 +25,8 @@ export const tokensCommand = new Command('tokens')
       }
 
       // Use network from options or fall back to config
-      let network = options.network;
-      if (!network) {
-        const config = await FileSystemStorage.loadConfig(agentId);
-        network = config.network || 'mainnet-beta';
-      }
+      const config = await FileSystemStorage.loadConfig(agentId);
+      const network = options.network || config.network || 'mainnet-beta';
 
       console.log('\n📟 PAW - Token Balances');
       console.log('Agent ID:', agentId);
@@ -37,7 +34,7 @@ export const tokensCommand = new Command('tokens')
       console.log('');
 
       const walletInfo = await WalletManager.getWalletInfo(agentId);
-      const connection = SolanaClient.getConnection(network as Cluster);
+      const connection = SolanaClient.getConnection(network as Cluster, config.rpcUrl);
       const publicKey = new PublicKey(walletInfo.address);
 
       // Get SOL balance

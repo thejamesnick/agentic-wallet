@@ -40,11 +40,8 @@ export const sendCommand = new Command('send')
 
     try {
       // Use network from options or fall back to config
-      let network = options.network;
-      if (!network) {
-        const config = await FileSystemStorage.loadConfig(agentId);
-        network = config.network || 'mainnet-beta';
-      }
+      const config = await FileSystemStorage.loadConfig(agentId);
+      const network = options.network || config.network || 'mainnet-beta';
 
       const isSPLToken = !!options.token;
 
@@ -103,7 +100,7 @@ export const sendCommand = new Command('send')
       const keypair = await WalletManager.loadKeypairAuto(agentId);
 
       // Get connection
-      const connection = SolanaClient.getConnection(network as Cluster);
+      const connection = SolanaClient.getConnection(network as Cluster, config.rpcUrl);
 
       let transaction: Transaction;
 

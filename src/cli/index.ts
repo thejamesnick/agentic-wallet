@@ -1,5 +1,6 @@
 #!/usr/bin/env node
 
+import 'dotenv/config';
 import { Command } from 'commander';
 import { initCommand } from './commands/init';
 import { balanceCommand } from './commands/balance';
@@ -18,6 +19,9 @@ import { multiSendCommand } from './commands/multi-send';
 import { guardrailsCommand } from './commands/guardrails';
 import { eventsCommand } from './commands/events';
 import { monitorCommand } from './commands/monitor';
+import { agentRunCommand } from './commands/agent-run';
+import { agentPolicyCommand } from './commands/agent-policy';
+import { agentStatusCommand } from './commands/agent-status';
 import * as fs from 'fs';
 import * as path from 'path';
 
@@ -56,6 +60,14 @@ program.addCommand(buyCommand);
 program.addCommand(sellCommand);
 program.addCommand(historyCommand);
 program.addCommand(exportCommand);
+
+// Agent commands
+const agentCommand = new Command('agent')
+  .description('🤖 Autonomous agent control (DCA, rebalancing, signals)');
+agentCommand.addCommand(agentRunCommand);
+agentCommand.addCommand(agentPolicyCommand);
+agentCommand.addCommand(agentStatusCommand);
+program.addCommand(agentCommand);
 
 // Parse arguments
 program.parse();

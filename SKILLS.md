@@ -384,6 +384,23 @@ paw send my-first-agent --to <another-address> --amount 0.1
 paw history my-first-agent
 ```
 
+## Zerion API & Mocking Behavior
+
+- The autonomous agent trading features require a `ZERION_API_KEY` for real on-chain swaps via Zerion. Set it in your environment before running real trades:
+
+```bash
+export ZERION_API_KEY="your_zerion_api_key_here"
+```
+
+- By default the agent will *not* silently perform mocked trades when the API key is missing. This prevents accidental demo behavior being mistaken for real execution. If you explicitly want mocked executions for demos, set:
+
+```bash
+export ALLOW_MOCK=true
+```
+
+- Recommended workflow: test end-to-end on `devnet` with `ZERION_API_KEY` and a funded devnet wallet. Only switch to `mainnet-beta` after verifying behavior and guardrails.
+
+
 ## Use Cases for AI Agents
 
 1. **High-Frequency Trading Bot**: Execute trades based on price signals
@@ -1057,6 +1074,269 @@ kill $MONITOR_PID
 
 # All encrypted except config files
 ```
+
+---
+
+## 🤖 Autonomous Agent Control (NEW!)
+
+**Fully autonomous agent execution with policy-scoped limits.**
+
+PAW now includes a complete autonomous agent framework that runs strategies (DCA, rebalancing, signal-based) with policy enforcement. Perfect for:
+- Dollar-cost averaging bots
+- Automated portfolio rebalancing
+- Signal-driven trading
+- Recurring trades with spending limits
+
+### Agent Command Overview
+
+```bash
+# Run autonomous agent with strategy
+paw agent run --agent-id <id> --strategy <dca|rebalance|signal> [options]
+
+# Manage spending policies and limits
+paw agent policy set --agent-id <id> [options]
+paw agent policy show --agent-id <id>
+
+# Monitor agent execution status
+paw agent status --agent-id <id> [options]
+```
+
+### DCA Agent (Dollar-Cost Averaging)
+
+Automatically buys a fixed amount of an asset at regular intervals.
+
+```bash
+# Set spending policy first
+paw agent policy set \
+  --agent-id dca-bot \
+  --spend-limit 50 \
+  --per-day 100 \
+  --per-hour 20 \
+  --chain solana \
+  --allowed-actions swap \
+  --expiry 30
+
+# Run DCA agent daily
+paw agent run \
+  --agent-id dca-bot \
+  --strategy dca \
+  --target-token SOL \
+  --payment-token USDC \
+  --amount 1.0 \
+  --schedule daily \
+  --time 14:00
+
+# Run once immediately (for testing)
+paw agent run \
+  --agent-id dca-bot \
+  --strategy dca \
+  --target-token SOL \
+  --payment-token USDC \
+  --amount 1.0 \
+  --once
+
+# Run continuously (background)
+paw agent run \
+  --agent-id dca-bot \
+  --strategy dca \
+  --target-token SOL \
+  --payment-token USDC \
+  --amount 1.0 \
+  --interval 60000  # Check every 60 seconds
+```
+
+### Portfolio Rebalancing Agent
+
+Monitors portfolio and rebalances to target allocation when drift exceeds threshold.
+
+```bash
+# Set policy with daily rebalancing allowed
+paw agent policy set \
+  --agent-id rebalance-bot \
+  --spend-limit 200 \
+  --per-day 1000 \
+  --allowed-actions swap,rebalance
+
+# Run rebalancing agent
+paw agent run \
+  --agent-id rebalance-bot \
+  --strategy rebalance \
+  --amount 1.0 \
+  --schedule daily
+```
+
+### Signal-Based Trading Agent
+
+Executes trades based on external signals (price, volume, webhooks).
+
+```bash
+# Signal-based strategy
+paw agent run \
+  --agent-id signal-bot \
+  --strategy signal \
+  --target-token BONK \
+  --payment-token SOL \
+  --amount 0.5 \
+  --once
+```
+
+### Policy Management
+
+#### Set a Policy
+
+```bash
+# Create comprehensive policy
+paw agent policy set \
+  --agent-id my-agent \
+  --spend-limit 50 \
+  --per-day 100 \
+  --per-hour 20 \
+  --chain solana \
+  --allowed-actions swap \
+  --expiry 30 \
+  --description "Conservative trading policy"
+
+# Output:
+# ✅ Policy saved:
+#    ID: policy-my-agent
+#    Status: Active (expires in 30 days)
+```
+
+#### View a Policy
+
+```bash
+paw agent policy show --agent-id my-agent
+
+# Output:
+# 📋 Policy Details:
+#    ID: policy-my-agent
+#    Per-TX Limit: 50 USDC
+#    Daily Limit: 100 USDC
+#    Hourly Limit: 20 USDC
+#    Allowed Chains: solana
+#    Allowed Actions: swap
+#    Expiry: 30 days from now
+#    Status: Active
+```
+
+### Monitor Agent Execution
+
+```bash
+# Check current status
+paw agent status --agent-id dca-bot
+
+# Output shows:
+# 📊 Status: running
+#    Strategy: dca
+#    Uptime: 2h 15m
+#    Last Execution: 5 minutes ago
+#    Next Execution: in 54 minutes
+#
+# 📋 Recent Executions:
+#    1. ✅ swap: 1.0 USDC → SOL (TX: 0x123abc...)
+#    2. ✅ swap: 1.0 USDC → SOL (TX: 0x456def...)
+#
+# 📊 Summary:
+#    Total: 47 executions
+#    Successful: 47
+#    Failed: 0
+#    Spent: 47.0 USDC
+
+# Show more history
+paw agent status --agent-id dca-bot --limit 20
+
+# Export as JSON
+paw agent status --agent-id dca-bot --json
+```
+
+### Full DCA Bot Example
+
+```bash
+#!/bin/bash
+# Complete autonomous DCA bot setup
+
+AGENT="dca-bot-prod"
+
+# 1. Create wallet
+paw init $AGENT
+
+# 2. Get address and fund it
+ADDRESS=$(paw address $AGENT)
+echo "Send USDC to: $ADDRESS"
+
+# 3. Set spending policy
+#    - 50 USDC per swap
+#    - 100 USDC daily maximum
+#    - 20 USDC hourly maximum
+#    - Solana chain only
+#    - Swaps only (no sends/bridges)
+paw agent policy set \
+  --agent-id $AGENT \
+  --spend-limit 50 \
+  --per-day 100 \
+  --per-hour 20 \
+  --chain solana \
+  --allowed-actions swap \
+  --expiry 30
+
+# 4. Run agent continuously
+#    - Buy 1 SOL every day at 14:00 UTC
+#    - Use USDC to pay
+paw agent run \
+  --agent-id $AGENT \
+  --strategy dca \
+  --target-token SOL \
+  --payment-token USDC \
+  --amount 1.0 \
+  --schedule daily \
+  --time 14:00 &
+
+# 5. Monitor execution
+paw agent status --agent-id $AGENT
+
+# 6. Check execution history
+paw history $AGENT --limit 5
+
+# Policy enforces limits:
+# ✅ 1.0 USDC swap executes (under 50 USDC limit)
+# ✅ 2.0 USDC swap executes (under 100 USDC/day)
+# ❌ 60 USDC swap blocked (exceeds 50 USDC/tx limit)
+```
+
+### How Policy Enforcement Works
+
+1. **Strategy evaluates** - DCA checks if time for next execution
+2. **Policy validates** - Check limits:
+   - Per-transaction: ≤ 50 USDC
+   - Hourly: ≤ 20 USDC total
+   - Daily: ≤ 100 USDC total
+   - Chain: Solana only
+   - Actions: Swap only (no send/bridge)
+3. **Execute or block**:
+   - ✅ Within limits → Execute swap
+   - ❌ Over limit → Block + log reason
+4. **Log transaction** - Record all executions for audit trail
+
+### Command Options Reference
+
+| Option | Description | Default | Example |
+|--------|-------------|---------|---------|
+| `--agent-id` | Agent identifier | Required | `dca-bot` |
+| `--strategy` | Strategy type | Required | `dca`, `rebalance`, `signal` |
+| `--target-token` | Token to acquire | `SOL` | `SOL`, `BONK` |
+| `--payment-token` | Token to pay with | `USDC` | `USDC`, `SOL` |
+| `--amount` | Amount per execution | `1.0` | `0.5`, `10.0` |
+| `--schedule` | Execution frequency | `daily` | `once`, `hourly`, `daily`, `weekly` |
+| `--time` | Scheduled time (HH:MM) | `14:00` | `09:30`, `20:00` |
+| `--once` | Run once immediately | Flag | - |
+| `--interval` | Loop interval (ms) | `60000` | `30000`, `120000` |
+| `--spend-limit` | Per-TX limit | `50` | `10`, `100` |
+| `--per-day` | Daily limit | `100` | `500`, `1000` |
+| `--per-hour` | Hourly limit | `20` | `50`, `100` |
+| `--chain` | Allowed chain | `solana` | `solana`, `ethereum` |
+| `--allowed-actions` | Comma-separated actions | `swap` | `swap,rebalance` |
+| `--expiry` | Policy expiry (days) | `30` | `60`, `0` (never) |
+| `--description` | Policy description | Auto | `"Conservative trading"` |
 
 ---
 

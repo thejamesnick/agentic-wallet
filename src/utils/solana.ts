@@ -8,30 +8,49 @@ export class SolanaClient {
    * Get RPC endpoint with Helius as primary and fallback to default
    */
   private static getEndpoint(network: Cluster): string {
-    // Try Helius first for better performance and reliability
-    if (this.HELIUS_API_KEY) {
+    // 1. Prioritize network-specific environment variables
+    if (network === 'mainnet-beta' && process.env.SOLANA_RPC_URL_MAINNET) {
+      return process.env.SOLANA_RPC_URL_MAINNET;
+    }
+    if (network === 'devnet' && process.env.SOLANA_RPC_URL_DEVNET) {
+      return process.env.SOLANA_RPC_URL_DEVNET;
+    }
+
+    // 2. Prioritize general environment variable for RPC URL
+    if (process.env.SOLANA_RPC_URL) {
+      return process.env.SOLANA_RPC_URL;
+    }
+
+    // 2. Use Helius if API key is available (env override or default key)
+    const apiKey = process.env.HELIUS_API_KEY || this.HELIUS_API_KEY;
+    if (apiKey) {
       if (network === 'mainnet-beta') {
-        return `https://mainnet.helius-rpc.com/?api-key=${this.HELIUS_API_KEY}`;
+        return `https://mainnet.helius-rpc.com/?api-key=${apiKey}`;
       } else if (network === 'devnet') {
-        return `https://devnet.helius-rpc.com/?api-key=${this.HELIUS_API_KEY}`;
+        return `https://devnet.helius-rpc.com/?api-key=${apiKey}`;
       }
     }
 
-    // Fallback to default Solana RPC
+    // 3. Fallback to default Solana RPC
     return clusterApiUrl(network);
   }
 
   /**
    * Get or create a connection to Solana
    */
-  static getConnection(network: Cluster = 'mainnet-beta'): Connection {
-    if (!SolanaClient.connections.has(network)) {
-      const endpoint = this.getEndpoint(network);
+  static getConnection(
+    network: Cluster = 'mainnet-beta',
+    customRpcUrl?: string
+  ): Connection {
+    const endpoint = customRpcUrl || this.getEndpoint(network);
+    const cacheKey = `${network}-${endpoint}`;
+
+    if (!SolanaClient.connections.has(cacheKey)) {
       const connection = new Connection(endpoint, 'confirmed');
-      SolanaClient.connections.set(network, connection);
+      SolanaClient.connections.set(cacheKey, connection);
     }
 
-    return SolanaClient.connections.get(network)!;
+    return SolanaClient.connections.get(cacheKey)!;
   }
 
   /**
@@ -46,9 +65,10 @@ export class SolanaClient {
    */
   static async getBalance(
     address: string,
-    network: Cluster = 'mainnet-beta'
+    network: Cluster = 'mainnet-beta',
+    customRpcUrl?: string
   ): Promise<number> {
-    const connection = SolanaClient.getConnection(network);
+    const connection = SolanaClient.getConnection(network, customRpcUrl);
     const publicKey = new (await import('@solana/web3.js')).PublicKey(
       address
     );
